@@ -1,8 +1,9 @@
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-
 
 struct my_msgbuf {
     long mtype;
@@ -27,6 +28,11 @@ void test_chars(char text[100])
 int my_msgctl(int msqid, int cmd)
 {
     msgctl(msqid, cmd, NULL);
+}
+
+char *get_error()
+{
+    return strerror(errno);
 }
 
 int main(void)
