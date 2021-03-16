@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -23,9 +23,6 @@ namespace NOS.Lab1
         [DllImport(DLL_NAME)] static extern int msgrcv(int msqid, ref Message msgp, int msgsz, long msgtyp, int msgflg);
         [DllImport(DLL_NAME, EntryPoint = "my_msgctl")] static extern int msgctl(int msqid, int cmd);
 
-        static int msgsnd(int msqid, ref Message msgp, int msgflg)
-            => msgsnd(msqid, ref msgp, Encoding.Unicode.GetByteCount(msgp.Text) + 1, msgflg);
-
         static void Main(string[] args)
         {
             test_chars("test_chars");
@@ -42,13 +39,13 @@ namespace NOS.Lab1
             int msqid;
             int key = 12345;
 
-            if ((msqid = msgget(key, 0b110_000_000 | IPC_CREAT)) == -1)
+            if ((msqid = msgget(key, (int)Permissions.UserReadWrite | IPC_CREAT)) == -1)
             {
                 Console.WriteLine("msgget: error");
                 return 1;
             }
 
-            if (msgsnd(msqid, ref message, 0) == -1)
+            if (msgsnd(msqid, ref message, message.Size, 0) == -1)
             {
                 Console.WriteLine("msgsnd: error");
                 return 1;
@@ -65,7 +62,7 @@ namespace NOS.Lab1
             int msqid;
             int key = 12345;
 
-            if ((msqid = msgget(key, 0b110_000_000 | IPC_CREAT)) == -1)
+            if ((msqid = msgget(key, (int)Permissions.UserReadWrite | IPC_CREAT)) == -1)
             {
                 Console.WriteLine("msgget: error");
                 return 1;
@@ -94,13 +91,23 @@ namespace NOS.Lab1
         }
     }
 
+    [Flags]
+    public enum Permissions : int
+    {
+        UserRead = 0b_100_000_000,
+        UserWrite = 0b_010_000_000,
+        UserReadWrite = UserRead | UserWrite,
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct Message
     {
-        internal const int TextSize = 200;
+        public const int MaxSize = 200;
 
         long _type;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = TextSize)] string _text;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxSize)]
+        string _text;
 
         public Message(long type, string text)
         {
@@ -110,5 +117,6 @@ namespace NOS.Lab1
 
         public long Type => _type;
         public string Text => _text;
+        public int Size => Encoding.Unicode.GetByteCount(Text) + 1;
     }
 }
