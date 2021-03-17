@@ -17,7 +17,7 @@ struct my_msgbuf {
 
 int msqid;
 
-void retreat(int failure) 
+void retreat(int failure)
 {
     if (msgctl(msqid, IPC_RMID, NULL) == -1) {
         perror("msgctl");
@@ -32,14 +32,14 @@ int main(void)
     key_t key;
 
     key = 12345;
-    
+
     if ((msqid = msgget(key, 0600 | IPC_CREAT)) == -1) { /* connect to the queue */
         perror("msgget");
         exit(1);
     }
-    
+
     sigset(SIGINT, retreat);
-    
+
     for(;;) { /* Spock never quits to his captain! */
         if (msgrcv(msqid, (struct msgbuf *)&buf, sizeof(buf)-sizeof(long), 0, 0) == -1) {
             perror("msgrcv");
