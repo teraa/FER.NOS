@@ -27,8 +27,8 @@ namespace NOS.Lab1
             Message message = default;
             int key = 12345;
 
-            using var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
-            Console.CancelKeyPress += (_, _) => queue.Dispose();
+            var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
+            Console.CancelKeyPress += (_, _) => queue.Delete();
 
             while(true)
             {
@@ -67,7 +67,7 @@ namespace NOS.Lab1
         public int Size => Encoding.Unicode.GetByteCount(Text) + 1;
     }
 
-    public class MessageQueue : IDisposable
+    public class MessageQueue
     {
         const string DLL_NAME = "../shared/msg.so";
         const int IPC_CREAT = 0x200;
@@ -119,11 +119,6 @@ namespace NOS.Lab1
         {
             if (my_msgctl(Id, IPC_RMID) == -1)
                 throw new Exception("Failed to delete queue.");
-        }
-
-        public void Dispose()
-        {
-            my_msgctl(Id, IPC_RMID);
         }
     }
 }
