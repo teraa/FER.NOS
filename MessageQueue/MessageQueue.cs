@@ -24,6 +24,8 @@ namespace NOS.Lab1
 
         public Message(long type, string text)
         {
+            if (text.Length > MaxSize) throw new ArgumentOutOfRangeException(nameof(text));
+
             _type = type;
             _text = text;
         }
