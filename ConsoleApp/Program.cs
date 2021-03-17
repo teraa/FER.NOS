@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace NOS.Lab1
 {
     class Program
     {
+        const string DLL_NAME = "../shared/rnd.so";
+        [DllImport(DLL_NAME)] static extern void print(string message);
+        [DllImport(DLL_NAME)] static extern void test_struct(ref Message value);
+        [DllImport(DLL_NAME)] static extern void test_chars(string text);
+
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+            print("test");
 
             Spock();
         }
