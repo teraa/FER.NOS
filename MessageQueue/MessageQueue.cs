@@ -86,9 +86,7 @@ namespace NOS.Lab1
 
         public void Send(ref Message message)
         {
-            int result = msgsnd(Id, ref message, message.Size, 0);
-
-            if (result == -1)
+            if (msgsnd(Id, ref message, message.Size, 0) == -1)
                 throw new Exception("Failed to send message.");
         }
 
