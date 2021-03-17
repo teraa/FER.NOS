@@ -7,8 +7,15 @@ namespace NOS.Lab1
     [Flags]
     public enum Permissions : int
     {
-        UserRead = 0b_100_000_000,
+        None = 0,
+        OtherWrite = 0b_000_000_010,
+        OtherRead = 0b_000_000_100,
+        OtherReadWrite = OtherRead | OtherWrite,
+        GroupWrite = 0b_000_010_000,
+        GroupRead = 0b_000_100_000,
+        GroupReadWrite = GroupRead | GroupWrite,
         UserWrite = 0b_010_000_000,
+        UserRead = 0b_100_000_000,
         UserReadWrite = UserRead | UserWrite,
     }
 
