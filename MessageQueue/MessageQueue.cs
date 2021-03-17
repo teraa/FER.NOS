@@ -84,13 +84,13 @@ namespace NOS.Lab1
             };
         }
 
-        public void Send(ref Message message)
+        public void Send(ref Message message, int flags = 0)
         {
-            if (msgsnd(Id, ref message, message.Size, 0) == -1)
+            if (msgsnd(Id, ref message, message.Size, flags) == -1)
                 throw new Exception("Failed to send message.");
         }
 
-        public void Receive(ref Message message, long type, int flags)
+        public void Receive(ref Message message, long type = 0, int flags = 0)
         {
             int result = msgrcv(Id, ref message, Message.MaxSize, type, flags);
 

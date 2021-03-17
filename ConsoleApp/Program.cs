@@ -32,7 +32,7 @@ namespace NOS.Lab1
             {
                 while(true)
                 {
-                    queue.Receive(ref message, 0, 0);
+                    queue.Receive(ref message);
                     Console.WriteLine($"> {message.Text}");
                 }
             }
