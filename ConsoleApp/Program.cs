@@ -9,8 +9,8 @@ namespace NOS.Lab1
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            
-            var result = Kirk();
+
+            var result = Spock();
             Console.WriteLine($"Exit result: {result}");
         }
 
@@ -29,7 +29,8 @@ namespace NOS.Lab1
             Message message = default;
             int key = 12345;
 
-            var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
+            using var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
+            Console.CancelKeyPress += (_, _) => queue.Dispose();
 
             for (;;)
             {
@@ -102,7 +103,7 @@ namespace NOS.Lab1
 
             if (id == -1)
                 throw new Exception("Failed to get or create message queue.");
-            
+
             return new MessageQueue
             {
                 Id = id,
