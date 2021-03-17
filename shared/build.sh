@@ -1,3 +1,4 @@
 #!/bin/bash
-gcc -shared msg.c -o msg.so
-gcc -shared rnd.c -o rnd.so
+for file in {msg,rnd}; do
+    gcc -shared $file.c -o $file.so
+done
