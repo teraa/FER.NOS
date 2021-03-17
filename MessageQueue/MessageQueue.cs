@@ -31,8 +31,10 @@ namespace NOS.Lab1
 
         public Message(long type, string text)
         {
-            if (type < 1) throw new ArgumentOutOfRangeException(nameof(type));
-            if (text.Length > MaxSize) throw new ArgumentOutOfRangeException(nameof(text));
+            if (type < 1)
+                throw new ArgumentOutOfRangeException(nameof(type));
+            if (text.Length > MaxSize)
+                throw new ArgumentOutOfRangeException(nameof(text));
 
             _type = type;
             _text = text;
@@ -56,10 +58,17 @@ namespace NOS.Lab1
         public int Id { get; private init; }
         public int Key { get; private init; }
 
-        [DllImport(DLL_NAME)] static extern int msgget(int key, int flags);
-        [DllImport(DLL_NAME)] static extern int msgsnd(int msqid, ref Message msgp, int msgsz, int msgflg);
-        [DllImport(DLL_NAME)] static extern int msgrcv(int msqid, ref Message msgp, int msgsz, long msgtyp, int msgflg);
-        [DllImport(DLL_NAME)] static extern int my_msgctl(int msqid, int cmd);
+        [DllImport(DLL_NAME)]
+        static extern int msgget(int key, int flags);
+
+        [DllImport(DLL_NAME)]
+        static extern int msgsnd(int msqid, ref Message msgp, int msgsz, int msgflg);
+
+        [DllImport(DLL_NAME)]
+        static extern int msgrcv(int msqid, ref Message msgp, int msgsz, long msgtyp, int msgflg);
+
+        [DllImport(DLL_NAME, EntryPoint = "my_msgctl")]
+        static extern int msgctl(int msqid, int cmd);
 
         public static MessageQueue GetOrCreate(int key, Permissions permissions)
         {
@@ -93,7 +102,7 @@ namespace NOS.Lab1
 
         public void Delete()
         {
-            if (my_msgctl(Id, IPC_RMID) == -1)
+            if (msgctl(Id, IPC_RMID) == -1)
                 throw new Exception("Failed to delete queue.");
         }
     }
