@@ -10,21 +10,19 @@ namespace NOS.Lab1
         {
             Console.WriteLine("Hello World!");
 
-            var result = Spock();
-            Console.WriteLine($"Exit result: {result}");
+            Spock();
         }
 
-        static int Kirk()
+        static void Kirk()
         {
             var message = new Message(1L, "Kirk: We are attacked. Spock, send reinforcement.");
             int key = 12345;
             var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
             queue.Send(ref message);
             Console.WriteLine("Sent");
-            return 0;
         }
 
-        static int Spock()
+        static void Spock()
         {
             Message message = default;
             int key = 12345;
@@ -32,21 +30,11 @@ namespace NOS.Lab1
             using var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
             Console.CancelKeyPress += (_, _) => queue.Dispose();
 
-            for (;;)
+            while(true)
             {
                 queue.Receive(ref message, 0, 0);
                 Console.WriteLine($"> {message.Text}");
             }
-
-            // clean, handle sigint
-
-            // if (msgctl(msqid, IPC_RMID) == -1)
-            // {
-            //     Console.WriteLine("msgctl: error");
-            //     return 1;
-            // }
-
-            // return 0;
         }
     }
 
