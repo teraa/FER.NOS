@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -56,6 +56,8 @@ namespace NOS.Lab1
         const int IPC_RMID = 0;
         const int IPC_SET = 1;
         const int IPC_STAT = 2;
+
+        MessageQueue() { }
 
         public int Id { get; private init; }
         public int Key { get; private init; }
