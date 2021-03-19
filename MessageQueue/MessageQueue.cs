@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -43,6 +43,8 @@ namespace NOS.Lab1
         public long Type => _type;
         public string Text => _text;
         public int Size => Encoding.Unicode.GetByteCount(Text) + 1;
+
+        public override string ToString() => $"{Type}: {Text}";
     }
 
     public class MessageQueue
