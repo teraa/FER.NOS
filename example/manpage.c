@@ -1,4 +1,4 @@
-// http://manpages.ubuntu.com/manpages/xenial/man2/msgop.2.html
+// https://manpages.ubuntu.com/manpages/focal/man2/msgop.2.html
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
