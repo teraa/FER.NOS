@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace NOS.Lab1
@@ -27,7 +27,7 @@ namespace NOS.Lab1
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct MyMessage
+    public class MyMessage
     {
         internal  const int SIZE = sizeof(int) * 2;
 
@@ -35,21 +35,40 @@ namespace NOS.Lab1
         private int _carId;
         private int _direction;
 
+        public MyMessage() { }
         public MyMessage(MessageType type, int carId, int direction)
         {
-            if (direction is not (0 or 1))
-                throw new ArgumentOutOfRangeException(nameof(direction), direction, "Value must be 0 or 1");
-
-            _type = type;
-            _carId = carId;
-            _direction = direction;
+            Type = type;
+            CarId = carId;
+            Direction = direction;
         }
 
-        public MessageType Type => _type;
-        public int CarId => _carId;
-        public int Direction => _direction;
+        public MessageType Type
+        {
+            get => _type;
+            set => _type = value;
+        }
 
-        public override string ToString() => $"Type={Type}, CarId={CarId}, Direction={Direction}";
+        public int CarId
+        {
+            get => _carId;
+            set => _carId = value;
+        }
+
+        public int Direction
+        {
+            get => _direction;
+            set
+            {
+                if (value is not (0 or 1))
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Value must be 0 or 1");
+
+                _direction = value;
+            }
+        }
+
+        public override string ToString()
+            => $"Type={Type}, CarId={CarId}, Direction={Direction}";
     }
 
     public class MessageQueue
@@ -68,16 +87,16 @@ namespace NOS.Lab1
         public int Key { get; private init; }
 
         [DllImport(DLL_NAME)]
-        static extern int msgget(int key, int flags);
+        private static extern int msgget(int key, int flags);
 
         [DllImport(DLL_NAME)]
-        static extern int msgsnd(int msqid, ref MyMessage msgp, int msgsz, int msgflg);
+        private static extern int msgsnd(int msqid, MyMessage msgp, int msgsz, int msgflg);
 
         [DllImport(DLL_NAME)]
-        static extern int msgrcv(int msqid, ref MyMessage msgp, int msgsz, MessageType msgtyp, int msgflg);
+        private static extern int msgrcv(int msqid, MyMessage msgp, int msgsz, MessageType msgtyp, int msgflg);
 
         [DllImport(DLL_NAME, EntryPoint = "my_msgctl")]
-        static extern int msgctl(int msqid, int cmd);
+        private static extern int msgctl(int msqid, int cmd);
 
         public static MessageQueue GetOrCreate(int key, Permissions permissions)
         {
@@ -93,15 +112,15 @@ namespace NOS.Lab1
             };
         }
 
-        public void Send(ref MyMessage message, int flags = 0)
+        public void Send(MyMessage message, int flags = 0)
         {
-            if (msgsnd(Id, ref message, MyMessage.SIZE, flags) == -1)
+            if (msgsnd(Id, message, MyMessage.SIZE, flags) == -1)
                 throw new Exception("Failed to send message.");
         }
 
         public void Receive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, MyMessage.SIZE, type, flags);
+            int result = msgrcv(Id, message, MyMessage.SIZE, type, flags);
 
             if (result == -1)
                 throw new Exception("Failed to receive message.");
@@ -109,7 +128,7 @@ namespace NOS.Lab1
 
         public bool TryReceive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, MyMessage.SIZE, type, flags);
+            int result = msgrcv(Id, message, MyMessage.SIZE, type, flags);
 
             return result != -1;
         }

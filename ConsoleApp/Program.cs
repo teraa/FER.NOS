@@ -9,7 +9,7 @@ namespace NOS.Lab1
         const string DLL_NAME = "../shared/rnd.so";
         [DllImport(DLL_NAME)] static extern void print(string message);
         [DllImport(DLL_NAME)] static extern void test_text_struct(ref TextMessage value);
-        [DllImport(DLL_NAME)] static extern void test_my_struct(ref MyMessage value);
+        [DllImport(DLL_NAME)] static extern void test_my_struct(MyMessage value);
         [DllImport(DLL_NAME)] static extern void test_chars(string text);
 
         static void Main(string[] args)
@@ -19,8 +19,8 @@ namespace NOS.Lab1
 
             var textMessage = new TextMessage(10, "abcdef");
             test_text_struct(ref textMessage);
-            var myMessage = new MyMessage(MessageType.End, 1337, 34);
-            test_my_struct(ref myMessage);
+            var myMessage = new MyMessage(MessageType.End, 1337, 1);
+            test_my_struct(myMessage);
 
             // Spock();
             // Kirk();

@@ -32,7 +32,7 @@ namespace NOS.Lab1
 
             try
             {
-                MyMessage message = default;
+                MyMessage message = new();
 
                 while(true)
                 {
@@ -46,7 +46,7 @@ namespace NOS.Lab1
                         carId: message.CarId,
                         direction: _direction
                     );
-                    queue.Send(ref message);
+                    queue.Send(message);
 
 
                     message = new MyMessage(
@@ -54,7 +54,7 @@ namespace NOS.Lab1
                         carId: message.CarId,
                         direction: _direction
                     );
-                    queue.Send(ref message);
+                    queue.Send(message);
 
                     _direction ^= 1;
                 }

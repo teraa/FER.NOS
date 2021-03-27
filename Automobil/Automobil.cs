@@ -49,7 +49,7 @@ namespace NOS.Lab1
                     direction: _direction
                 );
 
-                queue.Send(ref message);
+                queue.Send(message);
                 Console.WriteLine($"Automobil {_id} čeka na prelazak preko mosta");
 
                 queue.Receive(ref message, MessageType.Begin);
