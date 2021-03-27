@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace NOS.Lab1
@@ -73,13 +73,13 @@ namespace NOS.Lab1
 
     public class MessageQueue
     {
-        const string DLL_NAME = "../shared/msg.so";
-        public const int IPC_CREAT = 0x200;
-        public const int IPC_EXCL = 0x400;
-        public const int IPC_NOWAIT = 0x800;
-        public const int IPC_RMID = 0;
-        public const int IPC_SET = 1;
-        public const int IPC_STAT = 2;
+        private const string DLL_NAME = "../shared/msg.so";
+        private const int IPC_CREAT = 0x200;
+        private const int IPC_EXCL = 0x400;
+        private const int IPC_NOWAIT = 0x800;
+        private const int IPC_RMID = 0;
+        private const int IPC_SET = 1;
+        private const int IPC_STAT = 2;
 
         private MessageQueue() { }
 
