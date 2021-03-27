@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MessageQueue\MessageQueue.csproj" />
-    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

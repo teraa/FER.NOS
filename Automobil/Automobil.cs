@@ -27,6 +27,8 @@ namespace NOS.Lab1
 
     class Car
     {
+        public const int QUEUE_KEY = 5000;
+
         readonly int _id;
         readonly int _direction;
 
@@ -38,7 +40,7 @@ namespace NOS.Lab1
 
         public void Run()
         {
-            var queue = MessageQueue.GetOrCreate(Consts.QUEUE_KEY, Permissions.UserReadWrite);
+            var queue = MessageQueue.GetOrCreate(QUEUE_KEY, Permissions.UserReadWrite);
             try
             {
                 MyMessage message = new MyMessage(

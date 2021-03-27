@@ -14,6 +14,8 @@ namespace NOS.Lab1
 
     class Semaphore
     {
+        public const int QUEUE_KEY = 5000;
+
         private readonly Random _rnd;
         private int _direction;
 
@@ -25,7 +27,7 @@ namespace NOS.Lab1
 
         public void Run()
         {
-            var queue = MessageQueue.GetOrCreate(Consts.QUEUE_KEY, Permissions.UserReadWrite);
+            var queue = MessageQueue.GetOrCreate(QUEUE_KEY, Permissions.UserReadWrite);
             Console.CancelKeyPress += (_, _) => queue.Delete();
 
             try
