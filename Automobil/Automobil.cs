@@ -17,22 +17,22 @@ namespace NOS.Lab1
             if (direction is not (0 or 1))
                 throw new ArgumentOutOfRangeException();
 
-            Console.WriteLine($"Automobil ID={id}, Direction={direction}");
+            // Console.WriteLine($"Automobil ID={id}, Direction={direction}");
 
-            new Car(id, direction).Run();
+            new Automobil(id, direction).Run();
 
             return 0;
         }
     }
 
-    class Car
+    class Automobil
     {
         public const int QUEUE_KEY = 5000;
 
         readonly int _id;
         readonly int _direction;
 
-        public Car(int id, int direction)
+        public Automobil(int id, int direction)
         {
             _id = id;
             _direction = direction;
@@ -44,19 +44,21 @@ namespace NOS.Lab1
             try
             {
                 Message message = new Message(
-                    type: MessageType.Request,
+                    type: MessageType.Request | (MessageType)_direction,
                     carId: _id,
                     direction: _direction
                 );
 
                 queue.Send(message);
-                Console.WriteLine($"Automobil {_id} čeka na prelazak preko mosta");
+                Console.WriteLine($"Automobil {_id} čeka na prelazak preko mosta (smjer {_direction})");
 
-                queue.Receive(ref message, MessageType.Begin);
+                if (!queue.TryReceive(ref message, MessageType.BeginLeft + _direction))
+                    return;
                 // Console.WriteLine($"> {message}");
                 Console.WriteLine($"Automobil {_id} se popeo na most");
 
-                queue.Receive(ref message, MessageType.End);
+                if (!queue.TryReceive(ref message, MessageType.EndLeft + _direction))
+                    return;
                 // Console.WriteLine($"> {message}");
                 Console.WriteLine($"Automobil {_id} je prešao most");
             }

@@ -6,9 +6,11 @@ namespace NOS.Lab1
     public enum MessageType : long
     {
         Any = 0,
-        Request = 1,
-        Begin = 2,
-        End = 3,
+        Request,
+        BeginLeft,
+        BeginRight,
+        EndLeft,
+        EndRight,
     }
 
     [StructLayout(LayoutKind.Sequential)]
