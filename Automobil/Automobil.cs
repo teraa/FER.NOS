@@ -43,7 +43,7 @@ namespace NOS.Lab1
             var queue = MessageQueue.GetOrCreate(QUEUE_KEY, Permissions.UserReadWrite);
             try
             {
-                MyMessage message = new MyMessage(
+                Message message = new Message(
                     type: MessageType.Request,
                     carId: _id,
                     direction: _direction

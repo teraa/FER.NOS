@@ -18,59 +18,6 @@ namespace NOS.Lab1
         UserReadWrite = UserRead | UserWrite,
     }
 
-    public enum MessageType : long
-    {
-        Any = 0,
-        Request = 1,
-        Begin = 2,
-        End = 3,
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public class MyMessage
-    {
-        internal  const int SIZE = sizeof(int) * 2;
-
-        private MessageType _type;
-        private int _carId;
-        private int _direction;
-
-        public MyMessage() { }
-        public MyMessage(MessageType type, int carId, int direction)
-        {
-            Type = type;
-            CarId = carId;
-            Direction = direction;
-        }
-
-        public MessageType Type
-        {
-            get => _type;
-            set => _type = value;
-        }
-
-        public int CarId
-        {
-            get => _carId;
-            set => _carId = value;
-        }
-
-        public int Direction
-        {
-            get => _direction;
-            set
-            {
-                if (value is not (0 or 1))
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Value must be 0 or 1");
-
-                _direction = value;
-            }
-        }
-
-        public override string ToString()
-            => $"Type={Type}, CarId={CarId}, Direction={Direction}";
-    }
-
     public class MessageQueue
     {
         private const string DLL_NAME = "../shared/msg.so";
@@ -90,10 +37,10 @@ namespace NOS.Lab1
         private static extern int msgget(int key, int flags);
 
         [DllImport(DLL_NAME)]
-        private static extern int msgsnd(int msqid, MyMessage msgp, int msgsz, int msgflg);
+        private static extern int msgsnd(int msqid, Message msgp, int msgsz, int msgflg);
 
         [DllImport(DLL_NAME)]
-        private static extern int msgrcv(int msqid, MyMessage msgp, int msgsz, MessageType msgtyp, int msgflg);
+        private static extern int msgrcv(int msqid, Message msgp, int msgsz, MessageType msgtyp, int msgflg);
 
         [DllImport(DLL_NAME, EntryPoint = "my_msgctl")]
         private static extern int msgctl(int msqid, int cmd);
@@ -112,23 +59,23 @@ namespace NOS.Lab1
             };
         }
 
-        public void Send(MyMessage message, int flags = 0)
+        public void Send(Message message, int flags = 0)
         {
-            if (msgsnd(Id, message, MyMessage.SIZE, flags) == -1)
+            if (msgsnd(Id, message, Message.SIZE, flags) == -1)
                 throw new Exception("Failed to send message.");
         }
 
-        public void Receive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
+        public void Receive(ref Message message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, message, MyMessage.SIZE, type, flags);
+            int result = msgrcv(Id, message, Message.SIZE, type, flags);
 
             if (result == -1)
                 throw new Exception("Failed to receive message.");
         }
 
-        public bool TryReceive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
+        public bool TryReceive(ref Message message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, message, MyMessage.SIZE, type, flags);
+            int result = msgrcv(Id, message, Message.SIZE, type, flags);
 
             return result != -1;
         }
