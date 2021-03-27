@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace NOS.Lab1
 {
@@ -38,6 +37,9 @@ namespace NOS.Lab1
 
         public MyMessage(MessageType type, int carId, int direction)
         {
+            if (direction is not (0 or 1))
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, "Value must be 0 or 1");
+
             _type = type;
             _carId = carId;
             _direction = direction;
@@ -48,34 +50,6 @@ namespace NOS.Lab1
         public int Direction => _direction;
 
         public override string ToString() => $"Type={Type}, CarId={CarId}, Direction={Direction}";
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct TextMessage
-    {
-        public const int MaxSize = 200;
-
-        long _type;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxSize)]
-        string _text;
-
-        public TextMessage(long type, string text)
-        {
-            if (type < 1)
-                throw new ArgumentOutOfRangeException(nameof(type));
-            if (text.Length > MaxSize)
-                throw new ArgumentOutOfRangeException(nameof(text));
-
-            _type = type;
-            _text = text;
-        }
-
-        public long Type => _type;
-        public string Text => _text;
-        public int Size => Encoding.Unicode.GetByteCount(Text) + 1;
-
-        public override string ToString() => $"{Type}: {Text}";
     }
 
     public class MessageQueue
