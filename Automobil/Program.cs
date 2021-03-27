@@ -13,12 +13,9 @@ namespace NOS.Lab1
             }
 
             var id = int.Parse(args[0]);
-            var direction = int.Parse(args[1]) switch
-            {
-                0 => Direction.North,
-                1 => Direction.South,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            var direction = int.Parse(args[1]);
+            if (direction is not (0 or 1))
+                throw new ArgumentOutOfRangeException();
 
             Console.WriteLine($"Automobil ID={id}, Direction={direction}");
 
@@ -31,9 +28,9 @@ namespace NOS.Lab1
     class Car
     {
         readonly int _id;
-        readonly Direction _direction;
+        readonly int _direction;
 
-        public Car(int id, Direction direction)
+        public Car(int id, int direction)
         {
             _id = id;
             _direction = direction;

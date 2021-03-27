@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace NOS.Lab1
 {
@@ -14,13 +14,13 @@ namespace NOS.Lab1
 
     class Semaphore
     {
-        readonly Random _rnd;
-        Direction _direction;
+        private readonly Random _rnd;
+        private int _direction;
 
         public Semaphore()
         {
             _rnd = new Random();
-            _direction = _rnd.Next(0, 2) == 0 ? Direction.North : Direction.South;
+            _direction = _rnd.Next(0, 2);
         }
 
         public void Run()
@@ -52,10 +52,7 @@ namespace NOS.Lab1
                     );
                     queue.Send(ref message);
 
-                    if (_direction == Direction.North)
-                        _direction = Direction.South;
-                    else
-                        _direction = Direction.North;
+                    _direction ^= 1;
                 }
             }
             catch (Exception ex)

@@ -11,10 +11,4 @@
         Begin = 1 << 6,
         End = 1 << 7,
     }
-
-    public enum Direction : long
-    {
-        North = 0,
-        South = 1,
-    }
 }
