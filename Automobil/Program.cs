@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace NOS.Lab1
 {
@@ -41,19 +41,20 @@ namespace NOS.Lab1
             var queue = MessageQueue.GetOrCreate(Consts.QUEUE_KEY, Permissions.UserReadWrite);
             try
             {
-                TextMessage message = new TextMessage(
-                    type: (long)MessageType.Request | (long)_direction,
-                    text: $"{_id}: Request {_direction}"
+                MyMessage message = new MyMessage(
+                    type: MessageType.Request,
+                    carId: _id,
+                    direction: _direction
                 );
 
                 queue.Send(ref message);
                 Console.WriteLine($"Automobil {_id} čeka na prelazak preko mosta");
 
-                queue.Receive(ref message, (long)MessageType.Begin | (long)_direction);
+                queue.Receive(ref message, MessageType.Begin);
                 // Console.WriteLine($"> {message}");
                 Console.WriteLine($"Automobil {_id} se popeo na most");
 
-                queue.Receive(ref message, (long)MessageType.End | (long)_direction);
+                queue.Receive(ref message, MessageType.End);
                 // Console.WriteLine($"> {message}");
                 Console.WriteLine($"Automobil {_id} je prešao most");
             }

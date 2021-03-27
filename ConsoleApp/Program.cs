@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace NOS.Lab1
@@ -7,7 +7,8 @@ namespace NOS.Lab1
     {
         const string DLL_NAME = "../shared/rnd.so";
         [DllImport(DLL_NAME)] static extern void print(string message);
-        [DllImport(DLL_NAME)] static extern void test_struct(ref TextMessage value);
+        [DllImport(DLL_NAME)] static extern void test_text_struct(ref TextMessage value);
+        [DllImport(DLL_NAME)] static extern void test_my_struct(ref MyMessage value);
         [DllImport(DLL_NAME)] static extern void test_chars(string text);
 
         static void Main(string[] args)
@@ -15,7 +16,13 @@ namespace NOS.Lab1
             Console.WriteLine("Hello World!");
             print("test");
 
-            Spock();
+            var textMessage = new TextMessage(10, "abcdef");
+            test_text_struct(ref textMessage);
+            var myMessage = new MyMessage(MessageType.End, 1337, 34);
+            test_my_struct(ref myMessage);
+
+            // Spock();
+            // Kirk();
         }
 
         static void Kirk()
@@ -23,7 +30,7 @@ namespace NOS.Lab1
             var message = new TextMessage(1L, "Kirk: We are attacked. Spock, send reinforcement.");
             int key = 12345;
             var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
-            queue.Send(ref message);
+            // queue.Send(ref message);
             Console.WriteLine("Sent");
         }
 
@@ -39,7 +46,7 @@ namespace NOS.Lab1
             {
                 while(true)
                 {
-                    queue.Receive(ref message);
+                    // queue.Receive(ref message);
                     Console.WriteLine($"> {message.Text}");
                 }
             }

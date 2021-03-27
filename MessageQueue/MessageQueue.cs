@@ -19,6 +19,37 @@ namespace NOS.Lab1
         UserReadWrite = UserRead | UserWrite,
     }
 
+    public enum MessageType : long
+    {
+        Any = 0,
+        Request = 1,
+        Begin = 2,
+        End = 3,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MyMessage
+    {
+        internal  const int SIZE = sizeof(int) * 2;
+
+        private MessageType _type;
+        private int _carId;
+        private int _direction;
+
+        public MyMessage(MessageType type, int carId, int direction)
+        {
+            _type = type;
+            _carId = carId;
+            _direction = direction;
+        }
+
+        public MessageType Type => _type;
+        public int CarId => _carId;
+        public int Direction => _direction;
+
+        public override string ToString() => $"Type={Type}, CarId={CarId}, Direction={Direction}";
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct TextMessage
     {
@@ -66,10 +97,10 @@ namespace NOS.Lab1
         static extern int msgget(int key, int flags);
 
         [DllImport(DLL_NAME)]
-        static extern int msgsnd(int msqid, ref TextMessage msgp, int msgsz, int msgflg);
+        static extern int msgsnd(int msqid, ref MyMessage msgp, int msgsz, int msgflg);
 
         [DllImport(DLL_NAME)]
-        static extern int msgrcv(int msqid, ref TextMessage msgp, int msgsz, long msgtyp, int msgflg);
+        static extern int msgrcv(int msqid, ref MyMessage msgp, int msgsz, MessageType msgtyp, int msgflg);
 
         [DllImport(DLL_NAME, EntryPoint = "my_msgctl")]
         static extern int msgctl(int msqid, int cmd);
@@ -88,23 +119,23 @@ namespace NOS.Lab1
             };
         }
 
-        public void Send(ref TextMessage message, int flags = 0)
+        public void Send(ref MyMessage message, int flags = 0)
         {
-            if (msgsnd(Id, ref message, message.Size, flags) == -1)
+            if (msgsnd(Id, ref message, MyMessage.SIZE, flags) == -1)
                 throw new Exception("Failed to send message.");
         }
 
-        public void Receive(ref TextMessage message, long type = 0, int flags = 0)
+        public void Receive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, TextMessage.MaxSize, type, flags);
+            int result = msgrcv(Id, ref message, MyMessage.SIZE, type, flags);
 
             if (result == -1)
                 throw new Exception("Failed to receive message.");
         }
 
-        public bool TryReceive(ref TextMessage message, long type = 0, int flags = 0)
+        public bool TryReceive(ref MyMessage message, MessageType type = MessageType.Any, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, TextMessage.MaxSize, type, flags);
+            int result = msgrcv(Id, ref message, MyMessage.SIZE, type, flags);
 
             return result != -1;
         }

@@ -2,9 +2,15 @@
 #include <string.h>
 #include <stdio.h>
 
-struct my_msgbuf {
+struct text_msgbuf {
     long mtype;
     char mtext[200];
+};
+
+struct my_msgbuf {
+    long mtype;
+    int car_id;
+    int direction;
 };
 
 void print(const char *message)
@@ -12,9 +18,14 @@ void print(const char *message)
     printf("%s\n", message);
 }
 
-void test_struct(struct my_msgbuf *valuep)
+void test_text_struct(struct text_msgbuf *valuep)
 {
     printf("mtype=%ld, mtext=%s\n", valuep->mtype, valuep->mtext);
+}
+
+void test_my_struct(struct my_msgbuf *valuep)
+{
+    printf("mtype=%ld, car_id=%d, direction=%d\n", valuep->mtype, valuep->car_id, valuep->direction);
 }
 
 void test_chars(char text[100])
@@ -31,6 +42,6 @@ int main(void)
 {
     test_chars("test_chars");
 
-    struct my_msgbuf val = { 1337, "test_struct" };
-    test_struct(&val);
+    struct text_msgbuf val = { 1337, "test_text_struct" };
+    test_text_struct(&val);
 }

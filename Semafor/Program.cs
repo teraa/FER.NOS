@@ -30,25 +30,27 @@ namespace NOS.Lab1
 
             try
             {
-                TextMessage message = default;
+                MyMessage message = default;
 
                 while(true)
                 {
                     Console.WriteLine($"Direction: {_direction}");
                     Console.Write("> ");
-                    queue.Receive(ref message, (long)MessageType.Request | (long)_direction);
+                    queue.Receive(ref message, MessageType.Request);
                     Console.WriteLine(message);
 
-                    message = new TextMessage(
-                        type: (long)MessageType.Begin | (long)_direction,
-                        text: $"Sem: Begin {_direction}"
+                    message = new MyMessage(
+                        type: MessageType.Begin,
+                        carId: message.CarId,
+                        direction: _direction
                     );
                     queue.Send(ref message);
 
 
-                    message = new TextMessage(
-                        type: (long)MessageType.End | (long)_direction,
-                        text: $"Sem: End {_direction}"
+                    message = new MyMessage(
+                        type: MessageType.End,
+                        carId: message.CarId,
+                        direction: _direction
                     );
                     queue.Send(ref message);
 
