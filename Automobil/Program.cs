@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace NOS.Lab1
 {
@@ -41,7 +41,7 @@ namespace NOS.Lab1
             var queue = MessageQueue.GetOrCreate(Consts.QUEUE_KEY, Permissions.UserReadWrite);
             try
             {
-                Message message = new Message(
+                TextMessage message = new TextMessage(
                     type: (long)MessageType.Request | (long)_direction,
                     text: $"{_id}: Request {_direction}"
                 );

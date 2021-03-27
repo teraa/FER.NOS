@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 namespace NOS.Lab1
@@ -7,7 +7,7 @@ namespace NOS.Lab1
     {
         const string DLL_NAME = "../shared/rnd.so";
         [DllImport(DLL_NAME)] static extern void print(string message);
-        [DllImport(DLL_NAME)] static extern void test_struct(ref Message value);
+        [DllImport(DLL_NAME)] static extern void test_struct(ref TextMessage value);
         [DllImport(DLL_NAME)] static extern void test_chars(string text);
 
         static void Main(string[] args)
@@ -20,7 +20,7 @@ namespace NOS.Lab1
 
         static void Kirk()
         {
-            var message = new Message(1L, "Kirk: We are attacked. Spock, send reinforcement.");
+            var message = new TextMessage(1L, "Kirk: We are attacked. Spock, send reinforcement.");
             int key = 12345;
             var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);
             queue.Send(ref message);
@@ -29,7 +29,7 @@ namespace NOS.Lab1
 
         static void Spock()
         {
-            Message message = default;
+            TextMessage message = default;
             int key = 12345;
 
             var queue = MessageQueue.GetOrCreate(key, Permissions.UserReadWrite);

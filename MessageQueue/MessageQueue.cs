@@ -20,7 +20,7 @@ namespace NOS.Lab1
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Message
+    public struct TextMessage
     {
         public const int MaxSize = 200;
 
@@ -29,7 +29,7 @@ namespace NOS.Lab1
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxSize)]
         string _text;
 
-        public Message(long type, string text)
+        public TextMessage(long type, string text)
         {
             if (type < 1)
                 throw new ArgumentOutOfRangeException(nameof(type));
@@ -66,10 +66,10 @@ namespace NOS.Lab1
         static extern int msgget(int key, int flags);
 
         [DllImport(DLL_NAME)]
-        static extern int msgsnd(int msqid, ref Message msgp, int msgsz, int msgflg);
+        static extern int msgsnd(int msqid, ref TextMessage msgp, int msgsz, int msgflg);
 
         [DllImport(DLL_NAME)]
-        static extern int msgrcv(int msqid, ref Message msgp, int msgsz, long msgtyp, int msgflg);
+        static extern int msgrcv(int msqid, ref TextMessage msgp, int msgsz, long msgtyp, int msgflg);
 
         [DllImport(DLL_NAME, EntryPoint = "my_msgctl")]
         static extern int msgctl(int msqid, int cmd);
@@ -88,23 +88,23 @@ namespace NOS.Lab1
             };
         }
 
-        public void Send(ref Message message, int flags = 0)
+        public void Send(ref TextMessage message, int flags = 0)
         {
             if (msgsnd(Id, ref message, message.Size, flags) == -1)
                 throw new Exception("Failed to send message.");
         }
 
-        public void Receive(ref Message message, long type = 0, int flags = 0)
+        public void Receive(ref TextMessage message, long type = 0, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, Message.MaxSize, type, flags);
+            int result = msgrcv(Id, ref message, TextMessage.MaxSize, type, flags);
 
             if (result == -1)
                 throw new Exception("Failed to receive message.");
         }
 
-        public bool TryReceive(ref Message message, long type = 0, int flags = 0)
+        public bool TryReceive(ref TextMessage message, long type = 0, int flags = 0)
         {
-            int result = msgrcv(Id, ref message, Message.MaxSize, type, flags);
+            int result = msgrcv(Id, ref message, TextMessage.MaxSize, type, flags);
 
             return result != -1;
         }

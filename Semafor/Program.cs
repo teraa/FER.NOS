@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace NOS.Lab1
 {
@@ -30,7 +30,7 @@ namespace NOS.Lab1
 
             try
             {
-                Message message = default;
+                TextMessage message = default;
 
                 while(true)
                 {
@@ -39,14 +39,14 @@ namespace NOS.Lab1
                     queue.Receive(ref message, (long)MessageType.Request | (long)_direction);
                     Console.WriteLine(message);
 
-                    message = new Message(
+                    message = new TextMessage(
                         type: (long)MessageType.Begin | (long)_direction,
                         text: $"Sem: Begin {_direction}"
                     );
                     queue.Send(ref message);
 
 
-                    message = new Message(
+                    message = new TextMessage(
                         type: (long)MessageType.End | (long)_direction,
                         text: $"Sem: End {_direction}"
                     );
