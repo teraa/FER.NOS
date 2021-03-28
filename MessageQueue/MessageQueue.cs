@@ -83,7 +83,12 @@ namespace NOS.Lab1
         public void Delete()
         {
             if (msgctl(Id, IPC_RMID) == -1)
-                throw new Exception("Failed to delete queue.");
+                throw new Exception("Failed to delete message queue.");
+        }
+
+        public bool TryDelete()
+        {
+            return msgctl(Id, IPC_RMID) != -1;
         }
     }
 }

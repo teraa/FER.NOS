@@ -1,27 +1,23 @@
-using System;
+﻿using System;
 
 namespace NOS.Lab1
 {
     class Program
     {
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             if (args.Length != 2)
             {
                 Console.WriteLine($"args: <id> <direction=(0|1)");
-                return 1;
+                return;
             }
 
             var id = int.Parse(args[0]);
             var direction = int.Parse(args[1]);
             if (direction is not (0 or 1))
-                throw new ArgumentOutOfRangeException();
-
-            // Console.WriteLine($"Automobil ID={id}, Direction={direction}");
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, "Direction value must be 0 or 1");
 
             new Automobil(id, direction).Run();
-
-            return 0;
         }
     }
 
@@ -48,23 +44,18 @@ namespace NOS.Lab1
                 carId: _id,
                 direction: _direction
             );
-                queue.Send(message);
-                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) čeka na prelazak preko mosta");
+            queue.Send(message);
+            Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) čeka na prelazak preko mosta");
 
-                if (!queue.TryReceive(ref message, MessageType.BeginLeft + _direction))
-                    return;
-                // Console.WriteLine($"> {message}");
-                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) se popeo na most");
+            // Čekaj dozvolu za prijelaz
+            if (!queue.TryReceive(ref message, MessageType.BeginLeft + _direction))
+                return;
+            Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) se popeo na most");
 
-                if (!queue.TryReceive(ref message, MessageType.EndLeft + _direction))
-                    return;
-                // Console.WriteLine($"> {message}");
-                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) je prešao most");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+            // Čekaj završetak prijelaza
+            if (!queue.TryReceive(ref message, MessageType.EndLeft + _direction))
+                return;
+            Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) je prešao most");
         }
     }
 }

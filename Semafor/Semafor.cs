@@ -14,7 +14,7 @@ namespace NOS.Lab1
             Console.WriteLine("Semafor");
 
             var semafor = new Semafor();
-            await semafor.RunAsync();
+            await semafor.Run();
         }
     }
 
@@ -26,7 +26,7 @@ namespace NOS.Lab1
         private readonly Random _rnd;
         private int _direction;
         private ConcurrentQueue<Message>[] _requestQueues;
-        private SemaphoreSlim _runSem;
+        private SemaphoreSlim _sem;
         private CancellationTokenSource _cts = null!;
 
         public Semafor()
@@ -35,12 +35,12 @@ namespace NOS.Lab1
             _direction = _rnd.Next(0, 2);
             _requestQueues = new ConcurrentQueue<Message>[] { new(), new() };
 
-            _runSem = new SemaphoreSlim(0, 1);
+            _sem = new SemaphoreSlim(0, 1);
         }
 
         private void OnTokenCancelled()
         {
-            _runSem.Release();
+            _sem.Release();
         }
 
         public void Listen(MessageQueue queue)
@@ -54,12 +54,12 @@ namespace NOS.Lab1
                     queue.Receive(ref message, MessageType.Request);
                     Console.WriteLine($"Zahtjev za prijelaz: automobil {message.CarId,3}, smjer {message.Direction}");
 
+                    // Spremi zahtjev za prijelaz
                     _requestQueues[message.Direction].Enqueue(message);
 
+                    // Propusti automobile ako postoje 3 ili više zahtjeva u trenutnom smjeru
                     if (_requestQueues[_direction].Count >= REQUESTS_TRESHOLD)
-                    {
                         _cts.Cancel();
-                    }
                 }
             }
             catch (Exception ex)
@@ -69,32 +69,26 @@ namespace NOS.Lab1
             }
         }
 
-        public async Task RunAsync()
+        public async Task Run()
         {
             try
             {
                 var queue = MessageQueue.GetOrCreate(QUEUE_KEY, Permissions.UserReadWrite);
 
-                Console.CancelKeyPress += (_, _) =>
-                {
-                    try
-                    {
-                        queue.Delete();
-                    }
-                    catch { }
-                };
+                // Izbriši red poruka po primitku SIGINT
+                Console.CancelKeyPress += (_, _) => queue.TryDelete();
 
-                var rts = new CancellationTokenSource();
+                // Pokreni task za čitanje reda poruka
                 _ = Task.Run(() => Listen(queue));
 
                 while (true)
                 {
+                    // Propusti automobile čak i ako ima manje od 3 zahtjeva, ali nakon timeout milisekundi.
                     var timeout = _rnd.Next(500, 1000);
                     _cts = new CancellationTokenSource(timeout);
                     _cts.Token.Register(OnTokenCancelled);
-                    // Console.WriteLine($"Waiting for {REQUESTS_TRESHOLD} requests or {timeout} ms, direction={_direction}");
 
-                    await _runSem.WaitAsync();
+                    await _sem.WaitAsync();
 
                     var direction = _direction;
                     var carIds = new List<int>();
@@ -110,6 +104,7 @@ namespace NOS.Lab1
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                Environment.Exit(1);
             }
         }
 
@@ -117,9 +112,11 @@ namespace NOS.Lab1
         {
             Console.WriteLine($"Propuštam {carIds.Count} automobila u smjeru {direction}");
 
+            // Propusti automobile istovremeno
             var tasks = carIds.Select(id => ProcessRequest(queue, id, direction))
                 .ToArray();
 
+            // Pričekaj da automobili prijeđu
             await Task.WhenAll(tasks);
         }
 
@@ -129,12 +126,15 @@ namespace NOS.Lab1
             message.CarId = carId;
             message.Direction = direction;
 
+            // Signaliziraj početak prijelaza
             message.Type = MessageType.BeginLeft + direction;
             queue.Send(message);
 
+            // Trajanje prijelaza
             var delay = _rnd.Next(1000, 3000);
             await Task.Delay(delay);
 
+            // Signaliziraj završetak prijelaza
             message.Type = MessageType.EndLeft + direction;
             queue.Send(message);
         }
