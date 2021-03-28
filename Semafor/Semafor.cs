@@ -52,7 +52,7 @@ namespace NOS.Lab1
                     Message message = new();
 
                     queue.Receive(ref message, MessageType.Request);
-                    Console.WriteLine($"Zahtjev za prijelaz: automobil {message.CarId}, smjer {message.Direction}");
+                    Console.WriteLine($"Zahtjev za prijelaz: automobil {message.CarId,3}, smjer {message.Direction}");
 
                     _requestQueues[message.Direction].Enqueue(message);
 
@@ -115,7 +115,7 @@ namespace NOS.Lab1
 
         private async Task ProcessRequests(MessageQueue queue, IReadOnlyList<int> carIds, int direction)
         {
-            Console.WriteLine($"Propuštam {carIds.Count} automobila u smjeru {direction} ({string.Join(", ", carIds)})");
+            Console.WriteLine($"Propuštam {carIds.Count} automobila u smjeru {direction}");
 
             var tasks = carIds.Select(id => ProcessRequest(queue, id, direction))
                 .ToArray();
