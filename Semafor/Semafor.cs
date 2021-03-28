@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -24,22 +25,26 @@ namespace NOS.Lab1
 
         private readonly Random _rnd;
         private int _direction;
-        private Queue<Message>[] _requestQueues;
-        private SemaphoreSlim _sem;
-        private SemaphoreSlim _processSem;
+        private ConcurrentQueue<Message>[] _requestQueues;
+        private SemaphoreSlim _runSem;
+        private CancellationTokenSource _cts = null!;
 
         public Semafor()
         {
             _rnd = new Random();
             _direction = _rnd.Next(0, 2);
-            _requestQueues = new Queue<Message>[] { new(), new() };
-            _sem = new SemaphoreSlim(1, 1);
-            _processSem = new SemaphoreSlim(0, 1);
+            _requestQueues = new ConcurrentQueue<Message>[] { new(), new() };
+
+            _runSem = new SemaphoreSlim(0, 1);
+        }
+
+        private void OnTokenCancelled()
+        {
+            _runSem.Release();
         }
 
         public void Listen(MessageQueue queue)
         {
-            Console.WriteLine("Listening...");
             try
             {
                 while (true)
@@ -47,25 +52,20 @@ namespace NOS.Lab1
                     Message message = new();
 
                     queue.Receive(ref message, MessageType.Request);
-                    Console.WriteLine(message);
-                    _sem.Wait();
-                    try
-                    {
+                    Console.WriteLine($"Zahtjev za prijelaz: automobil {message.CarId}, smjer {message.Direction}");
 
-                        _requestQueues[message.Direction].Enqueue(message);
+                    _requestQueues[message.Direction].Enqueue(message);
 
-                        if (_requestQueues[_direction].Count >= REQUESTS_TRESHOLD)
-                            _processSem.Release(); // EXCEPTION
-                    }
-                    finally
+                    if (_requestQueues[_direction].Count >= REQUESTS_TRESHOLD)
                     {
-                        _sem.Release();
+                        _cts.Cancel();
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                Environment.Exit(1);
             }
         }
 
@@ -77,51 +77,50 @@ namespace NOS.Lab1
 
                 Console.CancelKeyPress += (_, _) =>
                 {
-                    queue.Delete();
+                    try
+                    {
+                        queue.Delete();
+                    }
+                    catch { }
                 };
 
-                var rts = new CancellationTokenSource(); // TODO: Timeout
+                var rts = new CancellationTokenSource();
                 _ = Task.Run(() => Listen(queue));
 
                 while (true)
                 {
                     var timeout = _rnd.Next(500, 1000);
-                    Console.WriteLine($"Waiting for batch of {REQUESTS_TRESHOLD} requests or {timeout} ms, direction={_direction}");
-                    await _processSem.WaitAsync(timeout);
+                    _cts = new CancellationTokenSource(timeout);
+                    _cts.Token.Register(OnTokenCancelled);
+                    // Console.WriteLine($"Waiting for {REQUESTS_TRESHOLD} requests or {timeout} ms, direction={_direction}");
 
-                    Message[] requests;
-                    await _sem.WaitAsync();
-                    try
-                    {
-                        var requestCount = _requestQueues[_direction].Count;
-                        if (requestCount > REQUESTS_TRESHOLD)
-                            requestCount = REQUESTS_TRESHOLD;
+                    await _runSem.WaitAsync();
 
-                        requests = new Message[requestCount];
-                        for (int i = 0; i < requests.Length; i++)
-                            requests[i] = _requestQueues[_direction].Dequeue();
+                    var direction = _direction;
+                    var carIds = new List<int>();
+                    for (int i = 0; i < REQUESTS_TRESHOLD && _requestQueues[direction].TryDequeue(out var req); i++)
+                        carIds.Add(req.CarId);
 
-                        _direction ^= 1;
-                    }
-                    finally
-                    {
-                        _sem.Release();
-                    }
+                    _direction ^= 1;
 
-
-                    var tasks = requests.Select(x => ProcessRequest(queue, x.CarId, x.Direction))
-                        .ToArray();
-
-                    if (tasks.Length > 0)
-                        Console.WriteLine($"Waiting for {tasks.Length} tasks.");
-
-                    await Task.WhenAll(tasks);
+                    if (carIds.Count > 0)
+                        await ProcessRequests(queue, carIds, direction);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
+        }
+
+        private async Task ProcessRequests(MessageQueue queue, IReadOnlyList<int> carIds, int direction)
+        {
+            Console.WriteLine($"Propuštam {carIds.Count} automobila u smjeru {direction} ({string.Join(", ", carIds)})");
+
+            var tasks = carIds.Select(id => ProcessRequest(queue, id, direction))
+                .ToArray();
+
+            await Task.WhenAll(tasks);
         }
 
         private async Task ProcessRequest(MessageQueue queue, int carId, int direction)

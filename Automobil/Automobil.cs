@@ -50,17 +50,17 @@ namespace NOS.Lab1
                 );
 
                 queue.Send(message);
-                Console.WriteLine($"Automobil {_id} čeka na prelazak preko mosta (smjer {_direction})");
+                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) čeka na prelazak preko mosta");
 
                 if (!queue.TryReceive(ref message, MessageType.BeginLeft + _direction))
                     return;
                 // Console.WriteLine($"> {message}");
-                Console.WriteLine($"Automobil {_id} se popeo na most");
+                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) se popeo na most");
 
                 if (!queue.TryReceive(ref message, MessageType.EndLeft + _direction))
                     return;
                 // Console.WriteLine($"> {message}");
-                Console.WriteLine($"Automobil {_id} je prešao most");
+                Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) je prešao most");
             }
             catch (Exception ex)
             {

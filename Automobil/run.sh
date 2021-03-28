@@ -12,7 +12,7 @@ else
 fi
 
 echo "Starting $n processes"
-trap 'kill $(jobs -p)' EXIT
+trap 'kill $(jobs -p)' SIGINT SIGTERM
 
 for i in $(seq 1 $n); do
     ./bin/Automobil $i $(($RANDOM % 2)) &
