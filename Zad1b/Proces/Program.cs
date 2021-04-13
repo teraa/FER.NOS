@@ -35,12 +35,17 @@ namespace NOS.Lab1
                 return;
             }
 
-
+            Run(n, id);
         }
 
         static void Usage()
         {
             Console.WriteLine("Usage: <N> <ID>");
+        }
+
+        static void Run(int n, int id)
+        {
+            Console.WriteLine($"N={n}, ID={id}");
         }
     }
 }
