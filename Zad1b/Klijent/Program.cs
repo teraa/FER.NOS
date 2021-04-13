@@ -14,7 +14,13 @@ namespace NOS.Lab1
             pipeClient.Connect();
             Console.WriteLine("Connected");
 
-            using var sw = new StreamWriter(pipeClient)
+            Write(pipeClient);
+            Console.WriteLine("done");
+        }
+
+        static void Write(Stream stream)
+        {
+            using var sw = new StreamWriter(stream)
             {
                 AutoFlush = true,
             };
@@ -24,8 +30,6 @@ namespace NOS.Lab1
             {
                 sw.WriteLine(line);
             }
-
-            Console.WriteLine("done");
         }
     }
 }

@@ -14,14 +14,18 @@ namespace NOS.Lab1
             pipeServer.WaitForConnection();
             Console.WriteLine("Connected");
 
-            using var sr = new StreamReader(pipeServer);
+            Read(pipeServer);
+            Console.WriteLine("done");
+        }
+
+        static void Read(Stream stream)
+        {
+            using var sr = new StreamReader(stream);
             string? line;
             while ((line = sr.ReadLine()) is not null)
             {
                 Console.WriteLine($"> {line}");
             }
-
-            Console.WriteLine("done");
         }
     }
 }
