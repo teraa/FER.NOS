@@ -2,7 +2,7 @@ using System;
 
 namespace NOS.Lab1
 {
-    class Program
+    class Proces
     {
         static void Main(string[] args)
         {
