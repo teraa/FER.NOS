@@ -22,14 +22,6 @@ namespace NOS.Lab1
         private int _carId;
         private int _direction;
 
-        public Message() { }
-        public Message(MessageType type, int carId, int direction)
-        {
-            Type = type;
-            CarId = carId;
-            Direction = direction;
-        }
-
         public MessageType Type
         {
             get => _type;

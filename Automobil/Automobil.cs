@@ -39,11 +39,12 @@ namespace NOS.Lab1
             var queue = MessageQueue.GetOrCreate(QUEUE_KEY, Permissions.UserReadWrite);
 
             // Pošalji zahtjev
-            var message = new Message(
-                type: MessageType.Request,
-                carId: _id,
-                direction: _direction
-            );
+            var message = new Message
+            {
+                Type = MessageType.Request,
+                CarId = _id,
+                Direction = _direction,
+            };
             queue.Send(message);
             Console.WriteLine($"Automobil {_id,3} (smjer {_direction}) čeka na prelazak preko mosta");
 

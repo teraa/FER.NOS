@@ -19,7 +19,7 @@ namespace NOS.Lab1
 
             var textMessage = new TextMessage(10, "abcdef");
             test_text_struct(ref textMessage);
-            var myMessage = new Message(MessageType.EndLeft, 1337, 1);
+            var myMessage = new Message { Type = MessageType.EndLeft, CarId = 1337, Direction = 1 };
             test_my_struct(myMessage);
 
             // Spock();
