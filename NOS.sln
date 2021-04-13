@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.6.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{064C848C-122E-4767-9A6B-B068B10B39F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "Zad1a\ConsoleApp\ConsoleApp.csproj", "{064C848C-122E-4767-9A6B-B068B10B39F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue", "MessageQueue\MessageQueue.csproj", "{5BA33E9D-BC7B-4768-B612-49811E605103}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueue", "Zad1a\MessageQueue\MessageQueue.csproj", "{5BA33E9D-BC7B-4768-B612-49811E605103}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automobil", "Automobil\Automobil.csproj", "{2CEA600F-7784-4D97-BCDA-CBBCE23CBE8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automobil", "Zad1a\Automobil\Automobil.csproj", "{2CEA600F-7784-4D97-BCDA-CBBCE23CBE8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semafor", "Semafor\Semafor.csproj", "{A27DF6D5-868B-4BFC-B97E-8CE86153A647}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semafor", "Zad1a\Semafor\Semafor.csproj", "{A27DF6D5-868B-4BFC-B97E-8CE86153A647}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
