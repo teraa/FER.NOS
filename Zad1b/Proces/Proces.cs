@@ -30,6 +30,7 @@ namespace NOS.Lab1
 
         static async Task Main(string[] args)
         {
+            #region args
             if (args.Length != 2
                 || !int.TryParse(args[0], out s_n)
                 || !int.TryParse(args[1], out s_pid))
@@ -60,6 +61,7 @@ namespace NOS.Lab1
             }
 
             static void Usage() => Console.WriteLine("Usage: <N> <ID>");
+            #endregion
 
             s_mmf = MemoryMappedFile.CreateFromFile(MM_FILE, FileMode.OpenOrCreate, null, MM_FILE_SIZE);
 
@@ -234,6 +236,7 @@ namespace NOS.Lab1
             Console.WriteLine($"Client: Disconnected from server {targetId}");
         }
 
+        #region working
         static void Broadcast(Message message)
         {
             for (int i = 0; i < s_sendQueues.Length; i++)
@@ -251,7 +254,6 @@ namespace NOS.Lab1
 
             s_sendQueues[targetId].Add(message);
         }
-
 
         static async Task DoWorkAsync()
         {
@@ -313,5 +315,6 @@ namespace NOS.Lab1
 
             await Task.Delay(s_rnd.Next(100, 2000));
         }
+        #endregion
     }
 }
