@@ -1,34 +1,33 @@
 using System;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading.Tasks;
 
 namespace NOS.Lab1
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Klijent");
 
-            using var pipeClient = new NamedPipeClientStream(".", "baza", PipeDirection.InOut);
-            pipeClient.Connect();
-            Console.WriteLine("Connected");
-
-            Write(pipeClient);
-            Console.WriteLine("done");
+            await RunClientAsync();
         }
 
-        static void Write(Stream stream)
+        static async Task RunClientAsync()
         {
-            using var sw = new StreamWriter(stream)
+            using var pipeClient = new NamedPipeClientStream(".", "testpipe", PipeDirection.Out);
+            await pipeClient.ConnectAsync();
+            Console.WriteLine("Connected to server.");
+
+            using var sw = new StreamWriter(pipeClient)
             {
                 AutoFlush = true,
             };
-
             string? line;
             while ((line = Console.ReadLine()) is not null)
             {
-                sw.WriteLine(line);
+                await sw.WriteLineAsync(line);
             }
         }
     }

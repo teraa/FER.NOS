@@ -1,31 +1,41 @@
 using System;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading.Tasks;
 
 namespace NOS.Lab1
 {
     class Program
     {
-        static void Main(string[] args)
+        private const int INSTANCES = 2;
+
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Baza");
+            Console.WriteLine($"Baza x{INSTANCES}");
 
-            using var pipeServer = new NamedPipeServerStream("baza", PipeDirection.InOut);
-            pipeServer.WaitForConnection();
-            Console.WriteLine("Connected");
+            var tasks = new Task[INSTANCES];
+            for (int i = 0; i < INSTANCES; i++)
+            {
+                tasks[i] = RunServerAsync(i);
+            }
 
-            Read(pipeServer);
-            Console.WriteLine("done");
+            await Task.WhenAll(tasks);
         }
 
-        static void Read(Stream stream)
+        static async Task RunServerAsync(int id)
         {
-            using var sr = new StreamReader(stream);
+            using var pipeServer = new NamedPipeServerStream("testpipe", PipeDirection.In, INSTANCES);
+            await pipeServer.WaitForConnectionAsync();
+            Console.WriteLine($"Client connected to {id} server");
+
+            using var sr = new StreamReader(pipeServer);
             string? line;
-            while ((line = sr.ReadLine()) is not null)
+            while ((line = await sr.ReadLineAsync()) is not null)
             {
-                Console.WriteLine($"> {line}");
+                Console.WriteLine($"[{id}] > {line}");
             }
+
+            Console.WriteLine($"[{id}] Done");
         }
     }
 }
