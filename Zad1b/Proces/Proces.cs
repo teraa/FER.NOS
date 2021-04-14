@@ -71,14 +71,15 @@ namespace NOS.Lab1
             s_serverSem = new SemaphoreSlim(0, s_n - 1);
 
             s_sendQueues = new BlockingCollection<Message>[s_n];
+            var tasks = new List<Task>(2 * (s_n - 1));
+
             for (int i = 0; i < s_n; i++)
             {
                 if (i == s_pid) continue;
+                tasks.Add(RunServerAsync(i, s_n - 1));
+                tasks.Add(RunClientAsync(i));
                 s_sendQueues[i] = new BlockingCollection<Message>();
             }
-
-            var serversTask = RunServersAsync();
-            var clientsTask = RunClientsAsync();
 
             for (int i = 0; i < s_n - 1; i++)
             {
@@ -125,18 +126,6 @@ namespace NOS.Lab1
             }
 
             Console.WriteLine("CompleteAdding");
-
-            await Task.WhenAll(serversTask, clientsTask);
-        }
-
-        static async Task RunServersAsync()
-        {
-            var tasks = new Task[s_n - 1];
-
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = RunServerAsync(i, tasks.Length);
-            }
 
             await Task.WhenAll(tasks);
         }
@@ -197,21 +186,6 @@ namespace NOS.Lab1
             }
 
             Console.WriteLine($"Server[{internalId}] Done.");
-        }
-
-        static async Task RunClientsAsync()
-        {
-            var tasks = new List<Task>(s_n - 1);
-
-            for (int i = 0; i < s_n; i++)
-            {
-                if (i == s_pid) continue;
-
-                // _ = Complete(i); // TMP
-                tasks.Add(RunClientAsync(i));
-            }
-
-            await Task.WhenAll(tasks);
         }
 
         static async Task RunClientAsync(int targetId)
