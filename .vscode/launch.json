@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Zad1a/Semafor/bin/Debug/net5.0/Semafor.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/Zad1a/Semafor",
+            "program": "${workspaceFolder}/Zad1b/Proces/bin/Debug/net5.0/Proces.dll",
+            "args": ["2", "0"],
+            "cwd": "${workspaceFolder}/Zad1b/Proces",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "integratedTerminal",
             "stopAtEntry": false
