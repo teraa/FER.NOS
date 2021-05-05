@@ -38,6 +38,11 @@ namespace NOS.Lab1.Zad1b
             _relay = relay;
         }
 
+        private void Write(string value)
+        {
+            Console.WriteLine($"{_id}: {value}");
+        }
+
         public async Task StartAsync()
         {
             for (int i = 0; i < RUN_COUNT; i++)
@@ -48,7 +53,7 @@ namespace NOS.Lab1.Zad1b
 
         public async Task RunAsync()
         {
-            // Console.WriteLine($"{_id}: Start");
+            // Write("Start");
 
             // Posalji zahtjev svim procesima
             _isAccessRequested = true;
@@ -57,16 +62,16 @@ namespace NOS.Lab1.Zad1b
             Broadcast(request);
 
             // Pricekaj odgovore svih procesa
-            // Console.WriteLine($"{_id}: Waiting for {_peers} responses.");
+            // Write($"Waiting for {_peers} responses.");
             for (int i = 0; i < _peers; i++)
                 await _sem.WaitAsync();
 
             // K.O. START
 
-            Console.WriteLine($"{_id}: K.O. Start");
+            Write("K.O. Start");
             await RunCriticalAsync();
             // await Task.Delay(2000);
-            Console.WriteLine($"{_id}: K.O. End");
+            Write("K.O. End");
 
             // K.O. KRAJ
             _isAccessRequested = false;
@@ -75,7 +80,7 @@ namespace NOS.Lab1.Zad1b
             while (_sendQueue.TryDequeue(out var item))
                 Send(item.message, item.targetId);
 
-            // Console.WriteLine($"{_id}: End");
+            // Write("End");
         }
 
         private async Task RunCriticalAsync()
@@ -85,10 +90,10 @@ namespace NOS.Lab1.Zad1b
             var myEntry = new DbEntry(_id, _timestamp, _count);
             _db.Update(myEntry);
 
-            Console.WriteLine($"{_id}: Ispis baze");
+            Write("Ispis baze");
             foreach (var entry in _db.GetAll())
-                Console.WriteLine($"{entry}");
-            Console.WriteLine("--");
+                Write($"{entry}");
+            Write("--");
 
             await Task.Delay(_rnd.Next(100, 2000));
         }
@@ -102,7 +107,7 @@ namespace NOS.Lab1.Zad1b
 
         private void Send(Message message, int targetId)
         {
-            // Console.WriteLine($"{_id}: < {message} (to {targetId})");
+            // Write($"< {message} (to {targetId})");
             _relay.Send(message, targetId);
         }
 
@@ -114,8 +119,8 @@ namespace NOS.Lab1.Zad1b
                     _timestamp = message.Timestamp;
                 _timestamp++;
 
-                // Console.WriteLine($"{_id}: > {message}");
-                // Console.WriteLine($"{_id}: Timestamp={_timestamp}");
+                // Write($"> {message}");
+                // Write($"Timestamp={_timestamp}");
 
                 switch (message.Type)
                 {
@@ -128,13 +133,13 @@ namespace NOS.Lab1.Zad1b
                             // string status = $"IsAccessRequested={_isAccessRequested},RequestTimestamp={_requestTimestamp},Message.Timestamp={message.Timestamp},Message.PId={message.PId}";
                             if (!_isAccessRequested || _requestTimestamp > message.Timestamp || (_requestTimestamp == message.Timestamp && _id > message.PId))
                             {
-                                // Console.WriteLine($"{_id}: Odgovaram ({status}");
+                                // Write($"Odgovaram ({status}");
                                 Send(response, message.PId);
                             }
                             else
                             {
                                 // spremi zahtjev (tj. odgovor na zahtjev koji ce se poslati nakon K.O.)
-                                // Console.WriteLine($"{_id}: Spremam ({status})");
+                                // Write($"Spremam ({status})");
                                 _sendQueue.Enqueue((response, message.PId));
                             }
                         }
@@ -148,7 +153,7 @@ namespace NOS.Lab1.Zad1b
                         break;
 
                     default:
-                        Console.WriteLine($"Unknown message type: {message.Type}");
+                        Write($"Unknown message type: {message.Type}");
                         break;
                 }
             }
