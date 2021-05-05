@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace NOS.Lab1.Zad1b
@@ -10,7 +10,7 @@ namespace NOS.Lab1.Zad1b
             Console.WriteLine("Hello World!");
 
             var db = new Database();
-            var nodes = new Node[10];
+            var nodes = new Node[3];
             var relay = new Relay(nodes);
             for (int i = 0; i < nodes.Length; i++)
                 nodes[i] = new Node(i, nodes.Length - 1, db, relay);

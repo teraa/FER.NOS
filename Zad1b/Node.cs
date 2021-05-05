@@ -7,7 +7,7 @@ namespace NOS.Lab1.Zad1b
 {
     class Node
     {
-        private const int RUN_COUNT = 5;
+        private const int RUN_COUNT = 2;
 
         private int _id;
         private int _peers;
