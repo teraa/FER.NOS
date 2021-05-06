@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Text;
 
 namespace NOS.Lab1.Zad1b
 {
@@ -9,11 +10,15 @@ namespace NOS.Lab1.Zad1b
     {
         private long _size;
         private MemoryMappedFile _mmf;
+        private byte[] _filler;
 
         public MMFDatabase(string filePath, long size)
         {
             _size = size;
             _mmf = MemoryMappedFile.CreateFromFile(filePath, FileMode.OpenOrCreate, null, size);
+
+            string fillerText = new string('\n', (int)size);
+            _filler = Encoding.ASCII.GetBytes(fillerText);
         }
 
         public void Dispose()
@@ -41,7 +46,7 @@ namespace NOS.Lab1.Zad1b
         {
             // clear file
             using (var stream = _mmf.CreateViewStream())
-                stream.Write(new byte[_size]);
+                stream.Write(_filler);
 
             using (var stream = _mmf.CreateViewStream())
             {
