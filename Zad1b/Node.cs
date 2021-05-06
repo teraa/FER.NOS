@@ -19,7 +19,8 @@ namespace NOS.Lab1.Zad1b
         private int _count;
         private bool _isAccessRequested;
         private Queue<(Message message, int targetId)> _sendQueue;
-        private SemaphoreSlim _sem;
+        private SemaphoreSlim _responseSem;
+        private SemaphoreSlim _endSem;
         private Random _rnd;
         private object _receiveLock;
         private NamedPipeServerStream[] _servers;
@@ -36,7 +37,8 @@ namespace NOS.Lab1.Zad1b
             _count = 0;
             _isAccessRequested = false;
             _sendQueue = new();
-            _sem = new SemaphoreSlim(0, _peers);
+            _responseSem = new SemaphoreSlim(0, _peers);
+            _endSem = new SemaphoreSlim(0, _peers);
             _rnd = new Random();
             _receiveLock = new object();
             _servers = new NamedPipeServerStream[_peers + 1];
@@ -81,17 +83,6 @@ namespace NOS.Lab1.Zad1b
             }
         }
 
-        private void Close()
-        {
-            for (int i = 0; i <= _peers; i++)
-            {
-                if (i == _id) continue;
-
-                _sws[i].Dispose();
-                _clients[i].Dispose();
-            }
-        }
-
         private async Task ListenAsync(NamedPipeServerStream server)
         {
             try
@@ -123,7 +114,29 @@ namespace NOS.Lab1.Zad1b
                 await RunAsync();
             }
 
-            Close();
+            await WaitForEndAsync();
+        }
+
+        private async Task WaitForEndAsync()
+        {
+            var endMessage = new Message(MessageType.End, _id, _timestamp);
+            Broadcast(endMessage);
+
+            // pričekaj kraj svih čvorova
+            for (int i = 0; i < _peers; i++)
+            {
+                await _endSem.WaitAsync();
+            }
+
+            // cleanup
+            for (int i = 0; i <= _peers; i++)
+            {
+                if (i == _id) continue;
+
+                _sws[i].Dispose();
+                _clients[i].Dispose();
+                _servers[i].Dispose();
+            }
         }
 
         public async Task RunAsync()
@@ -136,7 +149,7 @@ namespace NOS.Lab1.Zad1b
 
             // Pricekaj odgovore svih procesa
             for (int i = 0; i < _peers; i++)
-                await _sem.WaitAsync();
+                await _responseSem.WaitAsync();
 
             // K.O. START
             await RunCriticalAsync();
@@ -194,10 +207,8 @@ namespace NOS.Lab1.Zad1b
 
             try
             {
-
-            var sw = _sws[targetId];
-            sw.WriteLine(raw);
-            // sw.Flush();
+                var sw = _sws[targetId];
+                sw.WriteLine(raw);
             }
             catch (Exception ex)
             {
@@ -243,7 +254,13 @@ namespace NOS.Lab1.Zad1b
 
                     case MessageType.Response:
                         {
-                            _sem.Release();
+                            _responseSem.Release();
+                        }
+                        break;
+
+                    case MessageType.End:
+                        {
+                            _endSem.Release();
                         }
                         break;
 

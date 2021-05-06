@@ -42,6 +42,8 @@ namespace NOS.Lab1.Zad1b
             var db = new MMFDatabase("data.db", 1024);
             var node = new Node(id, peers, db);
             await node.StartAsync();
+
+            Console.WriteLine($"{id}: EXIT");
         }
     }
 }

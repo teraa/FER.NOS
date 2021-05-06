@@ -60,5 +60,6 @@ namespace NOS.Lab1.Zad1b
     {
         Request,
         Response,
+        End,
     }
 }
