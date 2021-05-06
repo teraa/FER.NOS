@@ -8,9 +8,9 @@ namespace NOS.Lab1.Zad1b
 {
     class MMFDatabase : IDatabase, IDisposable
     {
-        private long _size;
-        private MemoryMappedFile _mmf;
-        private byte[] _filler;
+        private readonly long _size;
+        private readonly MemoryMappedFile _mmf;
+        private readonly byte[] _filler;
 
         public MMFDatabase(string filePath, long size)
         {
