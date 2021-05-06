@@ -66,15 +66,15 @@ namespace NOS.Lab1.Zad1b
                 tasks.Add(_clients[i].ConnectAsync());
             }
 
-            // pričekaj da se povežu svi cjevovodi
+            // Pričekaj da se povežu svi cjevovodi
             await Task.WhenAll(tasks);
 
-            // otvori pisača za svakog klijenta prije čitanja servera
+            // Otvori pisača za svakog klijenta prije čitanja servera
             for (int i = 0; i <= _peers; i++)
                 if (i != _id)
                     _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
 
-            // paralelno čitaj svaki server
+            // Paralelno čitaj svaki server
             for (int i = 0; i <= _peers; i++)
                 if (i != _id)
                     _ = ListenAsync(_servers[i]);
@@ -119,11 +119,11 @@ namespace NOS.Lab1.Zad1b
             var endMessage = new Message(MessageType.End, _id, _timestamp);
             Broadcast(endMessage);
 
-            // pričekaj kraj svih čvorova
+            // Pričekaj kraj svih čvorova
             for (int i = 0; i < _peers; i++)
                 await _endSem.WaitAsync();
 
-            // počisti
+            // Počisti
             for (int i = 0; i <= _peers; i++)
             {
                 if (i == _id) continue;
@@ -148,7 +148,6 @@ namespace NOS.Lab1.Zad1b
             await RunCriticalAsync();
             // K.O. KRAJ
 
-            // _isAccessRequested = false;
             _request = null;
 
             // Posalji odgovor svim procesima koji cekaju na odgovor
@@ -162,7 +161,7 @@ namespace NOS.Lab1.Zad1b
 
             _count++;
 
-            // ažuriraj svoje vrijednosti
+            // Ažuriraj svoje vrijednosti
             var myEntry = new DbEntry(_id, _timestamp, _count);
             var entries = _db.GetEntries();
             var idx = entries.FindIndex(x => x.Pid == _id);
@@ -173,12 +172,12 @@ namespace NOS.Lab1.Zad1b
 
             _db.SetEntries(entries);
 
-            // ispiši sadržaj baze
+            // Ispiši sadržaj baze
             Write("  Ispis baze");
             foreach (var entry in entries)
                 Write($"  {entry}");
 
-            // spavaj
+            // Spavaj
             await Task.Delay(_rnd.Next(100, 2000));
 
             Write("}");
@@ -225,7 +224,7 @@ namespace NOS.Lab1.Zad1b
                 if (message is null)
                     throw new ArgumentNullException(nameof(message));
 
-                // ažuriraj svoj sat
+                // Ažuriraj svoj sat
                 if (_timestamp < message.Timestamp)
                     _timestamp = message.Timestamp;
                 _timestamp++;
@@ -236,17 +235,17 @@ namespace NOS.Lab1.Zad1b
                 {
                     case MessageType.Request:
                         {
-                            // generiraj odgovor(j, T(i))
+                            // Generiraj odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
                             if (_request is null || _request.Timestamp > message.Timestamp || (_request.Timestamp == message.Timestamp && _id > message.Pid))
                             {
-                                // pošalji
+                                // Pošalji
                                 Send(response, message.Pid);
                             }
                             else
                             {
-                                // spremi
+                                // Spremi
                                 _sendQueue.Enqueue((response, message.Pid));
                             }
                         }
@@ -254,14 +253,14 @@ namespace NOS.Lab1.Zad1b
 
                     case MessageType.Response:
                         {
-                            // signaliziraj primitak odgovora
+                            // Signaliziraj primitak odgovora
                             _responseSem.Release();
                         }
                         break;
 
                     case MessageType.End:
                         {
-                            // signaliziraj kraj čvora
+                            // Signaliziraj kraj čvora
                             _endSem.Release();
                         }
                         break;
