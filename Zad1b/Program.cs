@@ -13,9 +13,8 @@ namespace NOS.Lab1.Zad1b
             const string dbFilePath = "data.db";
             using var db = new MMFDatabase(dbFilePath, 1024);
             var nodes = new Node[3];
-            var relay = new Relay(nodes);
             for (int i = 0; i < nodes.Length; i++)
-                nodes[i] = new Node(i, nodes.Length - 1, db, relay);
+                nodes[i] = new Node(i, nodes.Length - 1, db);
 
             var tasks = new Task[nodes.Length];
             for (int i = 0; i < nodes.Length; i++)

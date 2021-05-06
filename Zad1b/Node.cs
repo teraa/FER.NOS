@@ -26,7 +26,7 @@ namespace NOS.Lab1.Zad1b
         private NamedPipeClientStream[] _clients;
         private StreamWriter[] _sws;
 
-        public Node(int id, int peers, IDatabase db, Relay relay)
+        public Node(int id, int peers, IDatabase db)
         {
             _id = id;
             _peers = peers;
@@ -191,7 +191,6 @@ namespace NOS.Lab1.Zad1b
         private void Send(Message message, int targetId)
         {
             // Write($"< {message} (to {targetId})");
-            // _relay.Send(message, targetId);
             var raw = message.ToString();
             _sws[targetId].WriteLine(raw);
         }
