@@ -91,7 +91,6 @@ namespace NOS.Lab1.Zad1b
 
         void Listen(NamedPipeServerStream server)
         {
-            // Write("Listen Start");
             try
             {
                 using var sr = new StreamReader(server);
@@ -109,7 +108,6 @@ namespace NOS.Lab1.Zad1b
             }
 
             server.Dispose();
-            // Write("Listen End");
         }
 
         public async Task StartAsync()
@@ -126,8 +124,6 @@ namespace NOS.Lab1.Zad1b
 
         public async Task RunAsync()
         {
-            // Write("Run");
-
             // Posalji zahtjev svim procesima
             _isAccessRequested = true;
             _requestTimestamp = _timestamp;
@@ -135,29 +131,24 @@ namespace NOS.Lab1.Zad1b
             Broadcast(request);
 
             // Pricekaj odgovore svih procesa
-            // Write($"Waiting for {_peers} responses.");
             for (int i = 0; i < _peers; i++)
                 await _sem.WaitAsync();
 
             // K.O. START
-
-            Write("{");
             await RunCriticalAsync();
-            // await Task.Delay(2000);
-            Write("}");
-
             // K.O. KRAJ
+
             _isAccessRequested = false;
 
             // Posalji odgovor svim procesima koji cekaju na odgovor
             while (_sendQueue.TryDequeue(out var item))
                 Send(item.message, item.targetId);
-
-            // Write("End");
         }
 
         private async Task RunCriticalAsync()
         {
+            Write("{");
+
             _count++;
 
             var myEntry = new DbEntry(_id, _timestamp, _count);
@@ -175,6 +166,8 @@ namespace NOS.Lab1.Zad1b
                 Write($"  {entry}");
 
             await Task.Delay(_rnd.Next(100, 2000));
+
+            Write("}");
         }
 
         private void Broadcast(Message message)
@@ -202,8 +195,6 @@ namespace NOS.Lab1.Zad1b
                     _timestamp = message.Timestamp;
                 _timestamp++;
 
-                // Write($"Timestamp={_timestamp}");
-
                 switch (message.Type)
                 {
                     case MessageType.Request:
@@ -212,17 +203,12 @@ namespace NOS.Lab1.Zad1b
                             // odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
-                            // var isActive = _isActive;
-                            // string status = $"IsAccessRequested={_isAccessRequested},RequestTimestamp={_requestTimestamp},Message.Timestamp={message.Timestamp},Message.Pid={message.Pid}";
                             if (!_isAccessRequested || _requestTimestamp > message.Timestamp || (_requestTimestamp == message.Timestamp && _id > message.Pid))
                             {
-                                // Write($"Odgovaram ({status}");
                                 Send(response, message.Pid);
                             }
                             else
                             {
-                                // spremi zahtjev (tj. odgovor na zahtjev koji ce se poslati nakon K.O.)
-                                // Write($"Spremam ({status})");
                                 _sendQueue.Enqueue((response, message.Pid));
                             }
                         }
