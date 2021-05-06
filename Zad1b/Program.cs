@@ -1,4 +1,6 @@
 using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 
 namespace NOS.Lab1.Zad1b
@@ -7,49 +9,23 @@ namespace NOS.Lab1.Zad1b
     {
         static async Task Main(string[] args)
         {
-            if (args.Length != 4
-                || !int.TryParse(args[0], out var id)
-                || !int.TryParse(args[1], out var peers)
-                || !int.TryParse(args[2], out var runCount))
+            var rootCommand = new RootCommand()
             {
-                Usage();
-                return;
-            }
+                new Argument<int>(name: "id", description: "Node ID"),
+                new Argument<int>(name: "peers", description: "Number of peer nodes"),
+                new Argument<int>(name: "runs", description: "Number of runs"),
+                new Argument<string>(name: "dbFile", description: "Database file path"),
+            };
 
-            if (id < 0)
-            {
-                Console.WriteLine("Error: pid < 0");
-                Usage();
-                return;
-            }
+            rootCommand.Handler = CommandHandler.Create<int, int, int, string>(RunAsync);
 
-            if (peers < 1)
-            {
-                Console.WriteLine("Error: peers < 1");
-                Usage();
-                return;
-            }
+            await rootCommand.InvokeAsync(args);
+        }
 
-            if (id > peers)
-            {
-                Console.WriteLine("Error: pid > peers");
-                Usage();
-                return;
-            }
-
-            if (runCount < 1)
-            {
-                Console.WriteLine("Error: runCount < 1");
-                Usage();
-                return;
-            }
-
-            var dbFilePath = args[3];
-
-            static void Usage() => Console.WriteLine("Usage: <id> <peers> <runs> <dbFilePath>");
-
-            var db = new MMFDatabase(dbFilePath, 1024);
-            var node = new Node(id, peers, runCount, db);
+        static async Task RunAsync(int id, int peers, int runs, string dbFile)
+        {
+            var db = new MMFDatabase(dbFile, 1024);
+            var node = new Node(id, peers, runs, db);
             await node.StartAsync();
 
             Console.WriteLine($"{id}: EXIT");

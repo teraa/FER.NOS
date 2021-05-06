@@ -19,8 +19,11 @@ fi
 echo "Nodes: $n, Runs: $runs, DB: $db_file"
 trap 'kill $(jobs -p)' SIGINT SIGTERM
 
+peers=$(($n - 1))
+
 for i in $(seq 1 $n); do
-    ./bin/Zad1b $(($i - 1)) $(($n - 1)) $runs $db_file &
+    id=$(($i - 1))
+    ./bin/Zad1b $id $peers $runs $db_file &
 done
 
 wait

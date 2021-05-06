@@ -27,6 +27,18 @@ namespace NOS.Lab1.Zad1b
 
         public Node(int id, int peers, int runCount, IDatabase db)
         {
+            if (id < 0)
+                throw new ArgumentOutOfRangeException(nameof(id), id, "ID must be greater or equal to zero.");
+
+            if (peers <= 0)
+                throw new ArgumentOutOfRangeException(nameof(peers), peers, "Peer count must be greater than zero.");
+
+            if (id > peers)
+                throw new ArgumentOutOfRangeException(nameof(id), id, "ID cannot be greater than number of peers.");
+
+            if (runCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(runCount), runCount, "Run count must be greater than zero.");
+
             _id = id;
             _peers = peers;
             _runCount = runCount;

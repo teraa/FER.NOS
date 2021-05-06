@@ -13,6 +13,12 @@ namespace NOS.Lab1.Zad1b
 
         public MMFDatabase(string filePath, long size)
         {
+            if (filePath is null)
+                throw new ArgumentNullException(nameof(filePath));
+
+            if (size <= 0)
+                throw new ArgumentOutOfRangeException(nameof(size), size, "Size must be greater than zero.");
+
             _size = size;
             _mmf = MemoryMappedFile.CreateFromFile(filePath, FileMode.OpenOrCreate, null, size);
             _filler = new byte[size];
