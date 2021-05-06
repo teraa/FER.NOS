@@ -172,6 +172,9 @@ namespace NOS.Lab1.Zad1b
 
         private void Broadcast(Message message)
         {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
             for (int i = 0; i <= _peers; i++)
                 if (i != _id)
                     Send(message, i);
@@ -179,7 +182,10 @@ namespace NOS.Lab1.Zad1b
 
         private void Send(Message message, int targetId)
         {
-            Console.WriteLine($"{_id} > {targetId}: {(message.Type == MessageType.Request ? "zahtjev" : "odgovor")}({message.Pid}, {message.Timestamp})");
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            Console.WriteLine($"{_id} > {targetId}: {message}");
             var raw = message.ToString();
             var sw = _sws[targetId];
 
@@ -191,15 +197,19 @@ namespace NOS.Lab1.Zad1b
         {
             lock (_receiveLock)
             {
+                if (message is null)
+                    throw new ArgumentNullException(nameof(message));
+
                 if (_timestamp < message.Timestamp)
                     _timestamp = message.Timestamp;
                 _timestamp++;
+
+                Console.WriteLine($"{_id} < {message.Pid}: {message}");
 
                 switch (message.Type)
                 {
                     case MessageType.Request:
                         {
-                            Console.WriteLine($"{_id} < {message.Pid}: zahtjev({message.Pid}, {message.Timestamp})");
                             // odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
@@ -216,13 +226,11 @@ namespace NOS.Lab1.Zad1b
 
                     case MessageType.Response:
                         {
-                            Console.WriteLine($"{_id} < {message.Pid}: odgovor({message.Pid}, {message.Timestamp})");
                             _sem.Release();
                         }
                         break;
 
                     default:
-                        Console.WriteLine($"{_id} < {message.Pid}: {message}");
                         break;
                 }
             }

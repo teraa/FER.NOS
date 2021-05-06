@@ -19,10 +19,19 @@ namespace NOS.Lab1.Zad1b
         {
             try
             {
-                var parts = input.Split(',');
-                var type = Enum.Parse<MessageType>(parts[0].Split('=')[1]);
-                var pid = int.Parse(parts[1].Split('=')[1]);
-                var ts = int.Parse(parts[2].Split('=')[1]);
+                var idx = input.IndexOf('(');
+                var prefix = input[..idx];
+                var type = prefix switch
+                {
+                    "zahtjev" => MessageType.Request,
+                    "odgovor" => MessageType.Response,
+                    _ => Enum.Parse<MessageType>(prefix),
+                };
+
+                var args = input[(idx + 1)..(input.Length - 1)];
+                var parts = args.Split(',');
+                var pid = int.Parse(parts[0]);
+                var ts = int.Parse(parts[1]);
 
                 return new Message(type, pid, ts);
             }
@@ -31,10 +40,20 @@ namespace NOS.Lab1.Zad1b
                 Console.WriteLine($"input={input}\n{ex}");
                 throw;
             }
+
         }
 
         public override string ToString()
-            => $"Type={Type},Pid={Pid},Timestamp={Timestamp}";
+        {
+            var prefix = Type switch
+            {
+                MessageType.Request => "zahtjev",
+                MessageType.Response => "odgovor",
+                _ => Type.ToString(),
+            };
+
+            return $"{prefix}({Pid},{Timestamp})";
+        }
     }
 
     enum MessageType : int

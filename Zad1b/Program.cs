@@ -8,7 +8,6 @@ namespace NOS.Lab1.Zad1b
     {
         static async Task Main(string[] args)
         {
-            #region args
             if (args.Length != 2
                 || !int.TryParse(args[0], out var peers)
                 || !int.TryParse(args[1], out var id))
@@ -39,7 +38,6 @@ namespace NOS.Lab1.Zad1b
             }
 
             static void Usage() => Console.WriteLine("Usage: <peers> <id>");
-            #endregion
 
             var db = new MMFDatabase("data.db", 1024);
             var node = new Node(id, peers, db);
