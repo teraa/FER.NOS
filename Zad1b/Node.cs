@@ -9,21 +9,21 @@ namespace NOS.Lab1.Zad1b
 {
     class Node
     {
-        private int _id;
-        private int _peers;
-        private int _runCount;
-        private IDatabase _db;
+        private readonly int _id;
+        private readonly int _peers;
+        private readonly int _runCount;
+        private readonly IDatabase _db;
+        private readonly Queue<(Message message, int targetId)> _sendQueue;
+        private readonly SemaphoreSlim _responseSem;
+        private readonly SemaphoreSlim _endSem;
+        private readonly Random _rnd;
+        private readonly object _receiveLock;
+        private readonly NamedPipeServerStream[] _servers;
+        private readonly NamedPipeClientStream[] _clients;
+        private readonly StreamWriter[] _sws;
         private int _timestamp;
         private int _count;
         private Message? _request;
-        private Queue<(Message message, int targetId)> _sendQueue;
-        private SemaphoreSlim _responseSem;
-        private SemaphoreSlim _endSem;
-        private Random _rnd;
-        private object _receiveLock;
-        private NamedPipeServerStream[] _servers;
-        private NamedPipeClientStream[] _clients;
-        private StreamWriter[] _sws;
 
         public Node(int id, int peers, int runCount, IDatabase db)
         {
@@ -32,9 +32,6 @@ namespace NOS.Lab1.Zad1b
             _runCount = runCount;
             _db = db;
 
-            _timestamp = 1;
-            _count = 0;
-            _request = null;
             _sendQueue = new();
             _responseSem = new SemaphoreSlim(0, _peers);
             _endSem = new SemaphoreSlim(0, _peers);
@@ -43,6 +40,10 @@ namespace NOS.Lab1.Zad1b
             _servers = new NamedPipeServerStream[_peers + 1];
             _clients = new NamedPipeClientStream[_peers + 1];
             _sws = new StreamWriter[_peers + 1];
+
+            _timestamp = 1;
+            _count = 0;
+            _request = null;
         }
 
         private void Write(string value)
