@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +22,9 @@ namespace NOS.Lab1.Zad1b
         private SemaphoreSlim _sem;
         private Random _rnd;
         private object _receiveLock;
-        private Relay _relay;
+        private NamedPipeServerStream[] _servers;
+        private NamedPipeClientStream[] _clients;
+        private StreamWriter[] _sws;
 
         public Node(int id, int peers, IDatabase db, Relay relay)
         {
@@ -36,7 +39,9 @@ namespace NOS.Lab1.Zad1b
             _sem = new SemaphoreSlim(0, _peers);
             _rnd = new Random();
             _receiveLock = new object();
-            _relay = relay;
+            _servers = new NamedPipeServerStream[_peers + 1];
+            _clients = new NamedPipeClientStream[_peers + 1];
+            _sws = new StreamWriter[_peers + 1];
         }
 
         private void Write(string value)
@@ -44,17 +49,87 @@ namespace NOS.Lab1.Zad1b
             Console.WriteLine($"{_id}: {value}");
         }
 
+        private async Task InitializeAsync()
+        {
+            Write("Start init");
+            var tasks = new List<Task>();
+
+            for (int i = 0; i <= _peers; i++)
+            {
+                if (i == _id) continue;
+
+                var server = _servers[i] = new NamedPipeServerStream($"{_id}", PipeDirection.In, _peers);
+                var client = _clients[i] = new NamedPipeClientStream(".", $"{i}", PipeDirection.Out);
+
+                tasks.Add(_servers[i].WaitForConnectionAsync());
+                tasks.Add(_clients[i].ConnectAsync());
+
+            }
+
+            await Task.WhenAll(tasks);
+
+            for (int i = 0; i <= _peers; i++)
+            {
+                if (i == _id) continue;
+
+                _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
+
+                var server = _servers[i];
+                new Thread(() => Listen(server)).Start();
+            }
+
+            Write("Initialized");
+        }
+
+        private void Close()
+        {
+            for (int i = 0; i <= _peers; i++)
+            {
+                if (i == _id) continue;
+
+                _sws[i].Dispose();
+                _clients[i].Dispose();
+            }
+        }
+
+        void Listen(NamedPipeServerStream server)
+        {
+            Write("Listen Start");
+            try
+            {
+                using var sr = new StreamReader(server);
+
+                string? line;
+                while ((line = sr.ReadLine()) is not null)
+                {
+                    var message = Message.Parse(line);
+                    Receive(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Write(ex.ToString());
+            }
+
+            server.Dispose();
+            Write("Listen End");
+        }
+
         public async Task StartAsync()
         {
+            await InitializeAsync();
+
             for (int i = 0; i < RUN_COUNT; i++)
             {
                 await RunAsync();
             }
+
+            Close();
         }
 
         public async Task RunAsync()
         {
-            // Write("Start");
+            // Write("Run");
 
             // Posalji zahtjev svim procesima
             _isAccessRequested = true;
@@ -116,7 +191,9 @@ namespace NOS.Lab1.Zad1b
         private void Send(Message message, int targetId)
         {
             // Write($"< {message} (to {targetId})");
-            _relay.Send(message, targetId);
+            // _relay.Send(message, targetId);
+            var raw = message.ToString();
+            _sws[targetId].WriteLine(raw);
         }
 
         public void Receive(Message message)
