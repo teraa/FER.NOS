@@ -57,12 +57,11 @@ namespace NOS.Lab1.Zad1b
             {
                 if (i == _id) continue;
 
-                var server = _servers[i] = new NamedPipeServerStream($"{_id}", PipeDirection.In, _peers);
-                var client = _clients[i] = new NamedPipeClientStream(".", $"{i}", PipeDirection.Out);
+                _servers[i] = new NamedPipeServerStream($"{_id}", PipeDirection.In, _peers);
+                _clients[i] = new NamedPipeClientStream(".", $"{i}", PipeDirection.Out);
 
                 tasks.Add(_servers[i].WaitForConnectionAsync());
                 tasks.Add(_clients[i].ConnectAsync());
-
             }
 
             await Task.WhenAll(tasks);
@@ -70,8 +69,12 @@ namespace NOS.Lab1.Zad1b
             for (int i = 0; i <= _peers; i++)
             {
                 if (i == _id) continue;
-
                 _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
+            }
+
+            for (int i = 0; i <= _peers; i++)
+            {
+                if (i == _id) continue;
 
                 var server = _servers[i];
                 _ = ListenAsync(server);
@@ -116,6 +119,7 @@ namespace NOS.Lab1.Zad1b
 
             for (int i = 0; i < RUN_COUNT; i++)
             {
+                await Task.Delay(_rnd.Next(100, 2000));
                 await RunAsync();
             }
 
@@ -187,10 +191,23 @@ namespace NOS.Lab1.Zad1b
 
             Console.WriteLine($"{_id} > {targetId}: {message}");
             var raw = message.ToString();
-            var sw = _sws[targetId];
 
+            try
+            {
+
+            var sw = _sws[targetId];
             sw.WriteLine(raw);
-            sw.Flush();
+            // sw.Flush();
+            }
+            catch (Exception ex)
+            {
+                Write($"Error: {ex}");
+                Write($"TargetId={targetId}");
+                for (int i = 0; i < _sws.Length; i++)
+                {
+                    Write($"_sws[{i}] = {(_sws[i] is null ? "null" : "not null")}");
+                }
+            }
         }
 
         public void Receive(Message message)
