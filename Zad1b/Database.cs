@@ -3,7 +3,8 @@ using System.Linq;
 
 namespace NOS.Lab1.Zad1b
 {
-    class Database
+
+    class Database : IDatabase
     {
         private List<DbEntry> _entries;
 
@@ -12,18 +13,14 @@ namespace NOS.Lab1.Zad1b
             _entries = new List<DbEntry>();
         }
 
-        public void Update(DbEntry entry)
+        public List<DbEntry> GetEntries()
         {
-            var idx = _entries.FindIndex(x => x.PId == entry.PId);
-            if (idx >= 0)
-                _entries[idx] = entry;
-            else
-                _entries.Add(entry);
+            return _entries.ToList();
         }
 
-        public IReadOnlyList<DbEntry> GetAll()
+        public void SetEntries(List<DbEntry> entries)
         {
-            return _entries;
+            _entries = entries.ToList();
         }
     }
 }

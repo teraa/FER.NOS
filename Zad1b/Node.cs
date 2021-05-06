@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -88,10 +89,17 @@ namespace NOS.Lab1.Zad1b
             _count++;
 
             var myEntry = new DbEntry(_id, _timestamp, _count);
-            _db.Update(myEntry);
+            var entries = _db.GetEntries();
+            var idx = entries.FindIndex(x => x.PId == _id);
+            if (idx == -1)
+                entries.Add(myEntry);
+            else
+                entries[idx] = myEntry;
+
+            _db.SetEntries(entries);
 
             Write("Ispis baze");
-            foreach (var entry in _db.GetAll())
+            foreach (var entry in entries)
                 Write($"{entry}");
             Write("--");
 
