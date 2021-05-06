@@ -4,11 +4,11 @@ using System.Linq;
 namespace NOS.Lab1.Zad1b
 {
 
-    class Database : IDatabase
+    class MemoryDatabase : IDatabase
     {
         private List<DbEntry> _entries;
 
-        public Database()
+        public MemoryDatabase()
         {
             _entries = new List<DbEntry>();
         }
