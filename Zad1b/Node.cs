@@ -12,7 +12,7 @@ namespace NOS.Lab1.Zad1b
 
         private int _id;
         private int _peers;
-        private Database _db;
+        private IDatabase _db;
         private int _timestamp;
         private int _requestTimestamp;
         private int _count;
@@ -23,7 +23,7 @@ namespace NOS.Lab1.Zad1b
         private object _receiveLock;
         private Relay _relay;
 
-        public Node(int id, int peers, Database db, Relay relay)
+        public Node(int id, int peers, IDatabase db, Relay relay)
         {
             _id = id;
             _peers = peers;
