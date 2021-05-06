@@ -8,17 +8,11 @@ namespace NOS.Lab1.Zad1b
     {
         static async Task Main(string[] args)
         {
-            if (args.Length != 2
-                || !int.TryParse(args[0], out var peers)
-                || !int.TryParse(args[1], out var id))
+            if (args.Length != 4
+                || !int.TryParse(args[0], out var id)
+                || !int.TryParse(args[1], out var peers)
+                || !int.TryParse(args[2], out var runCount))
             {
-                Usage();
-                return;
-            }
-
-            if (peers < 1)
-            {
-                Console.WriteLine("Error: peers < 1");
                 Usage();
                 return;
             }
@@ -30,6 +24,13 @@ namespace NOS.Lab1.Zad1b
                 return;
             }
 
+            if (peers < 1)
+            {
+                Console.WriteLine("Error: peers < 1");
+                Usage();
+                return;
+            }
+
             if (id > peers)
             {
                 Console.WriteLine("Error: pid > peers");
@@ -37,10 +38,19 @@ namespace NOS.Lab1.Zad1b
                 return;
             }
 
-            static void Usage() => Console.WriteLine("Usage: <peers> <id>");
+            if (runCount < 1)
+            {
+                Console.WriteLine("Error: runCount < 1");
+                Usage();
+                return;
+            }
 
-            var db = new MMFDatabase("data.db", 1024);
-            var node = new Node(id, peers, db);
+            var dbFilePath = args[3];
+
+            static void Usage() => Console.WriteLine("Usage: <id> <peers> <runs> <dbFilePath>");
+
+            var db = new MMFDatabase(dbFilePath, 1024);
+            var node = new Node(id, peers, runCount, db);
             await node.StartAsync();
 
             Console.WriteLine($"{id}: EXIT");

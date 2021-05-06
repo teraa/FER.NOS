@@ -9,15 +9,13 @@ namespace NOS.Lab1.Zad1b
 {
     class Node
     {
-        private const int RUN_COUNT = 2;
-
         private int _id;
         private int _peers;
+        private int _runCount;
         private IDatabase _db;
         private int _timestamp;
-        private int _requestTimestamp;
         private int _count;
-        private bool _isAccessRequested;
+        private Message? _request;
         private Queue<(Message message, int targetId)> _sendQueue;
         private SemaphoreSlim _responseSem;
         private SemaphoreSlim _endSem;
@@ -27,15 +25,16 @@ namespace NOS.Lab1.Zad1b
         private NamedPipeClientStream[] _clients;
         private StreamWriter[] _sws;
 
-        public Node(int id, int peers, IDatabase db)
+        public Node(int id, int peers, int runCount, IDatabase db)
         {
             _id = id;
             _peers = peers;
+            _runCount = runCount;
             _db = db;
+
             _timestamp = 1;
-            _requestTimestamp = 0;
             _count = 0;
-            _isAccessRequested = false;
+            _request = null;
             _sendQueue = new();
             _responseSem = new SemaphoreSlim(0, _peers);
             _endSem = new SemaphoreSlim(0, _peers);
@@ -71,6 +70,7 @@ namespace NOS.Lab1.Zad1b
             for (int i = 0; i <= _peers; i++)
             {
                 if (i == _id) continue;
+
                 _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
             }
 
@@ -78,8 +78,7 @@ namespace NOS.Lab1.Zad1b
             {
                 if (i == _id) continue;
 
-                var server = _servers[i];
-                _ = ListenAsync(server);
+                _ = ListenAsync(_servers[i]);
             }
         }
 
@@ -108,7 +107,7 @@ namespace NOS.Lab1.Zad1b
         {
             await InitializeAsync();
 
-            for (int i = 0; i < RUN_COUNT; i++)
+            for (int i = 0; i < _runCount; i++)
             {
                 await Task.Delay(_rnd.Next(100, 2000));
                 await RunAsync();
@@ -142,10 +141,8 @@ namespace NOS.Lab1.Zad1b
         public async Task RunAsync()
         {
             // Posalji zahtjev svim procesima
-            _isAccessRequested = true;
-            _requestTimestamp = _timestamp;
-            var request = new Message(MessageType.Request, _id, _requestTimestamp);
-            Broadcast(request);
+            _request = new Message(MessageType.Request, _id, _timestamp);
+            Broadcast(_request);
 
             // Pricekaj odgovore svih procesa
             for (int i = 0; i < _peers; i++)
@@ -155,7 +152,8 @@ namespace NOS.Lab1.Zad1b
             await RunCriticalAsync();
             // K.O. KRAJ
 
-            _isAccessRequested = false;
+            // _isAccessRequested = false;
+            _request = null;
 
             // Posalji odgovor svim procesima koji cekaju na odgovor
             while (_sendQueue.TryDequeue(out var item))
@@ -241,7 +239,7 @@ namespace NOS.Lab1.Zad1b
                             // odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
-                            if (!_isAccessRequested || _requestTimestamp > message.Timestamp || (_requestTimestamp == message.Timestamp && _id > message.Pid))
+                            if (_request is null || _request.Timestamp > message.Timestamp || (_request.Timestamp == message.Timestamp && _id > message.Pid))
                             {
                                 Send(response, message.Pid);
                             }
