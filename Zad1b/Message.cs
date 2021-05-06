@@ -25,6 +25,7 @@ namespace NOS.Lab1.Zad1b
                 {
                     "zahtjev" => MessageType.Request,
                     "odgovor" => MessageType.Response,
+                    "kraj" => MessageType.End,
                     _ => Enum.Parse<MessageType>(prefix),
                 };
 
@@ -49,6 +50,7 @@ namespace NOS.Lab1.Zad1b
             {
                 MessageType.Request => "zahtjev",
                 MessageType.Response => "odgovor",
+                MessageType.End => "kraj",
                 _ => Type.ToString(),
             };
 

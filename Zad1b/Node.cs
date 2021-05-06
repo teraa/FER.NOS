@@ -66,21 +66,18 @@ namespace NOS.Lab1.Zad1b
                 tasks.Add(_clients[i].ConnectAsync());
             }
 
+            // pričekaj da se povežu svi cjevovodi
             await Task.WhenAll(tasks);
 
+            // otvori pisača za svakog klijenta prije čitanja servera
             for (int i = 0; i <= _peers; i++)
-            {
-                if (i == _id) continue;
+                if (i != _id)
+                    _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
 
-                _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
-            }
-
+            // paralelno čitaj svaki server
             for (int i = 0; i <= _peers; i++)
-            {
-                if (i == _id) continue;
-
-                _ = ListenAsync(_servers[i]);
-            }
+                if (i != _id)
+                    _ = ListenAsync(_servers[i]);
         }
 
         private async Task ListenAsync(NamedPipeServerStream server)
@@ -124,11 +121,9 @@ namespace NOS.Lab1.Zad1b
 
             // pričekaj kraj svih čvorova
             for (int i = 0; i < _peers; i++)
-            {
                 await _endSem.WaitAsync();
-            }
 
-            // cleanup
+            // počisti
             for (int i = 0; i <= _peers; i++)
             {
                 if (i == _id) continue;
@@ -167,6 +162,7 @@ namespace NOS.Lab1.Zad1b
 
             _count++;
 
+            // ažuriraj svoje vrijednosti
             var myEntry = new DbEntry(_id, _timestamp, _count);
             var entries = _db.GetEntries();
             var idx = entries.FindIndex(x => x.Pid == _id);
@@ -177,10 +173,12 @@ namespace NOS.Lab1.Zad1b
 
             _db.SetEntries(entries);
 
+            // ispiši sadržaj baze
             Write("  Ispis baze");
             foreach (var entry in entries)
                 Write($"  {entry}");
 
+            // spavaj
             await Task.Delay(_rnd.Next(100, 2000));
 
             Write("}");
@@ -191,9 +189,11 @@ namespace NOS.Lab1.Zad1b
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
+            var raw = message.ToString();
+
             for (int i = 0; i <= _peers; i++)
                 if (i != _id)
-                    Send(message, i);
+                    SendRaw(raw, i);
         }
 
         private void Send(Message message, int targetId)
@@ -203,20 +203,18 @@ namespace NOS.Lab1.Zad1b
 
             Console.WriteLine($"{_id} > {targetId}: {message}");
             var raw = message.ToString();
+            SendRaw(raw, targetId);
+        }
 
+        private void SendRaw(string message, int targetId)
+        {
             try
             {
-                var sw = _sws[targetId];
-                sw.WriteLine(raw);
+                _sws[targetId].WriteLine(message);
             }
             catch (Exception ex)
             {
                 Write($"Error: {ex}");
-                Write($"TargetId={targetId}");
-                for (int i = 0; i < _sws.Length; i++)
-                {
-                    Write($"_sws[{i}] = {(_sws[i] is null ? "null" : "not null")}");
-                }
             }
         }
 
@@ -227,6 +225,7 @@ namespace NOS.Lab1.Zad1b
                 if (message is null)
                     throw new ArgumentNullException(nameof(message));
 
+                // ažuriraj svoj sat
                 if (_timestamp < message.Timestamp)
                     _timestamp = message.Timestamp;
                 _timestamp++;
@@ -237,15 +236,17 @@ namespace NOS.Lab1.Zad1b
                 {
                     case MessageType.Request:
                         {
-                            // odgovor(j, T(i))
+                            // generiraj odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
                             if (_request is null || _request.Timestamp > message.Timestamp || (_request.Timestamp == message.Timestamp && _id > message.Pid))
                             {
+                                // pošalji
                                 Send(response, message.Pid);
                             }
                             else
                             {
+                                // spremi
                                 _sendQueue.Enqueue((response, message.Pid));
                             }
                         }
@@ -253,12 +254,14 @@ namespace NOS.Lab1.Zad1b
 
                     case MessageType.Response:
                         {
+                            // signaliziraj primitak odgovora
                             _responseSem.Release();
                         }
                         break;
 
                     case MessageType.End:
                         {
+                            // signaliziraj kraj čvora
                             _endSem.Release();
                         }
                         break;
