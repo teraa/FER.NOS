@@ -74,7 +74,7 @@ namespace NOS.Lab1.Zad1b
                 _sws[i] = new StreamWriter(_clients[i]) { AutoFlush = true };
 
                 var server = _servers[i];
-                new Thread(() => Listen(server)).Start();
+                _ = ListenAsync(server);
             }
         }
 
@@ -89,14 +89,14 @@ namespace NOS.Lab1.Zad1b
             }
         }
 
-        void Listen(NamedPipeServerStream server)
+        private async Task ListenAsync(NamedPipeServerStream server)
         {
             try
             {
                 using var sr = new StreamReader(server);
 
                 string? line;
-                while ((line = sr.ReadLine()) is not null)
+                while ((line = await sr.ReadLineAsync()) is not null)
                 {
                     var message = Message.Parse(line);
                     Receive(message);
