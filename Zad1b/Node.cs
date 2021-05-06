@@ -51,7 +51,6 @@ namespace NOS.Lab1.Zad1b
 
         private async Task InitializeAsync()
         {
-            Write("Start init");
             var tasks = new List<Task>();
 
             for (int i = 0; i <= _peers; i++)
@@ -77,8 +76,6 @@ namespace NOS.Lab1.Zad1b
                 var server = _servers[i];
                 new Thread(() => Listen(server)).Start();
             }
-
-            Write("Initialized");
         }
 
         private void Close()
@@ -94,7 +91,7 @@ namespace NOS.Lab1.Zad1b
 
         void Listen(NamedPipeServerStream server)
         {
-            Write("Listen Start");
+            // Write("Listen Start");
             try
             {
                 using var sr = new StreamReader(server);
@@ -112,7 +109,7 @@ namespace NOS.Lab1.Zad1b
             }
 
             server.Dispose();
-            Write("Listen End");
+            // Write("Listen End");
         }
 
         public async Task StartAsync()
@@ -144,10 +141,10 @@ namespace NOS.Lab1.Zad1b
 
             // K.O. START
 
-            Write("K.O. Start");
+            Write("{");
             await RunCriticalAsync();
             // await Task.Delay(2000);
-            Write("K.O. End");
+            Write("}");
 
             // K.O. KRAJ
             _isAccessRequested = false;
@@ -173,10 +170,9 @@ namespace NOS.Lab1.Zad1b
 
             _db.SetEntries(entries);
 
-            Write("Ispis baze");
+            Write("  Ispis baze");
             foreach (var entry in entries)
-                Write($"{entry}");
-            Write("--");
+                Write($"  {entry}");
 
             await Task.Delay(_rnd.Next(100, 2000));
         }
@@ -190,9 +186,12 @@ namespace NOS.Lab1.Zad1b
 
         private void Send(Message message, int targetId)
         {
-            // Write($"< {message} (to {targetId})");
+            Console.WriteLine($"{_id} > {targetId}: {(message.Type == MessageType.Request ? "zahtjev" : "odgovor")}({message.Pid}, {message.Timestamp})");
             var raw = message.ToString();
-            _sws[targetId].WriteLine(raw);
+            var sw = _sws[targetId];
+
+            sw.WriteLine(raw);
+            sw.Flush();
         }
 
         public void Receive(Message message)
@@ -203,13 +202,13 @@ namespace NOS.Lab1.Zad1b
                     _timestamp = message.Timestamp;
                 _timestamp++;
 
-                // Write($"> {message}");
                 // Write($"Timestamp={_timestamp}");
 
                 switch (message.Type)
                 {
                     case MessageType.Request:
                         {
+                            Console.WriteLine($"{_id} < {message.Pid}: zahtjev({message.Pid}, {message.Timestamp})");
                             // odgovor(j, T(i))
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
@@ -231,13 +230,13 @@ namespace NOS.Lab1.Zad1b
 
                     case MessageType.Response:
                         {
-                            // TOOD: add checks?
+                            Console.WriteLine($"{_id} < {message.Pid}: odgovor({message.Pid}, {message.Timestamp})");
                             _sem.Release();
                         }
                         break;
 
                     default:
-                        Write($"Unknown message type: {message.Type}");
+                        Console.WriteLine($"{_id} < {message.Pid}: {message}");
                         break;
                 }
             }

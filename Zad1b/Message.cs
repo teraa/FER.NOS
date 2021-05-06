@@ -17,12 +17,20 @@ namespace NOS.Lab1.Zad1b
 
         public static Message Parse(string input)
         {
-            var parts = input.Split(',');
-            var type = Enum.Parse<MessageType>(parts[0].Split('=')[1]);
-            var pid = int.Parse(parts[1].Split('=')[1]);
-            var ts = int.Parse(parts[2].Split('=')[1]);
+            try
+            {
+                var parts = input.Split(',');
+                var type = Enum.Parse<MessageType>(parts[0].Split('=')[1]);
+                var pid = int.Parse(parts[1].Split('=')[1]);
+                var ts = int.Parse(parts[2].Split('=')[1]);
 
-            return new Message(type, pid, ts);
+                return new Message(type, pid, ts);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"input={input}\n{ex}");
+                throw;
+            }
         }
 
         public override string ToString()

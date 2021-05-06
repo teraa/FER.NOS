@@ -8,23 +8,42 @@ namespace NOS.Lab1.Zad1b
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            #region args
+            if (args.Length != 2
+                || !int.TryParse(args[0], out var peers)
+                || !int.TryParse(args[1], out var id))
+            {
+                Usage();
+                return;
+            }
 
-            const string dbFilePath = "data.db";
-            using var db = new MMFDatabase(dbFilePath, 1024);
-            var nodes = new Node[3];
-            for (int i = 0; i < nodes.Length; i++)
-                nodes[i] = new Node(i, nodes.Length - 1, db);
+            if (peers < 1)
+            {
+                Console.WriteLine("Error: peers < 1");
+                Usage();
+                return;
+            }
 
-            var tasks = new Task[nodes.Length];
-            for (int i = 0; i < nodes.Length; i++)
-                tasks[i] = nodes[i].StartAsync();
+            if (id < 0)
+            {
+                Console.WriteLine("Error: pid < 0");
+                Usage();
+                return;
+            }
 
-            await Task.WhenAll(tasks);
+            if (id > peers)
+            {
+                Console.WriteLine("Error: pid > peers");
+                Usage();
+                return;
+            }
 
-            File.Delete(dbFilePath);
+            static void Usage() => Console.WriteLine("Usage: <peers> <id>");
+            #endregion
 
-            Console.WriteLine("Done");
+            var db = new MMFDatabase("data.db", 1024);
+            var node = new Node(id, peers, db);
+            await node.StartAsync();
         }
     }
 }
