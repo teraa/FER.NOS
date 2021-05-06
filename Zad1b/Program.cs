@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace NOS.Lab1.Zad1b
@@ -9,7 +10,8 @@ namespace NOS.Lab1.Zad1b
         {
             Console.WriteLine("Hello World!");
 
-            using var db = new MMFDatabase("data.db", 1024);
+            const string dbFilePath = "data.db";
+            using var db = new MMFDatabase(dbFilePath, 1024);
             var nodes = new Node[3];
             var relay = new Relay(nodes);
             for (int i = 0; i < nodes.Length; i++)
@@ -20,6 +22,8 @@ namespace NOS.Lab1.Zad1b
                 tasks[i] = nodes[i].StartAsync();
 
             await Task.WhenAll(tasks);
+
+            File.Delete(dbFilePath);
 
             Console.WriteLine("Done");
         }
