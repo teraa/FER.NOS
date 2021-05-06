@@ -2,14 +2,14 @@ namespace NOS.Lab1.Zad1b
 {
     class DbEntry
     {
-        public DbEntry(int pId, int timestamp, int count)
+        public DbEntry(int pid, int timestamp, int count)
         {
-            PId = pId;
+            Pid = pid;
             Timestamp = timestamp;
             Count = count;
         }
 
-        public int PId { get; }
+        public int Pid { get; }
         public int Timestamp { get; }
         public int Count { get; }
 
@@ -24,6 +24,6 @@ namespace NOS.Lab1.Zad1b
         }
 
         public override string ToString()
-            => $"PId={PId},Timestamp={Timestamp},Count={Count}";
+            => $"Pid={Pid},Timestamp={Timestamp},Count={Count}";
     }
 }

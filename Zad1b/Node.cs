@@ -90,7 +90,7 @@ namespace NOS.Lab1.Zad1b
 
             var myEntry = new DbEntry(_id, _timestamp, _count);
             var entries = _db.GetEntries();
-            var idx = entries.FindIndex(x => x.PId == _id);
+            var idx = entries.FindIndex(x => x.Pid == _id);
             if (idx == -1)
                 entries.Add(myEntry);
             else
@@ -138,17 +138,17 @@ namespace NOS.Lab1.Zad1b
                             var response = new Message(MessageType.Response, _id, message.Timestamp);
 
                             // var isActive = _isActive;
-                            // string status = $"IsAccessRequested={_isAccessRequested},RequestTimestamp={_requestTimestamp},Message.Timestamp={message.Timestamp},Message.PId={message.PId}";
-                            if (!_isAccessRequested || _requestTimestamp > message.Timestamp || (_requestTimestamp == message.Timestamp && _id > message.PId))
+                            // string status = $"IsAccessRequested={_isAccessRequested},RequestTimestamp={_requestTimestamp},Message.Timestamp={message.Timestamp},Message.Pid={message.Pid}";
+                            if (!_isAccessRequested || _requestTimestamp > message.Timestamp || (_requestTimestamp == message.Timestamp && _id > message.Pid))
                             {
                                 // Write($"Odgovaram ({status}");
-                                Send(response, message.PId);
+                                Send(response, message.Pid);
                             }
                             else
                             {
                                 // spremi zahtjev (tj. odgovor na zahtjev koji ce se poslati nakon K.O.)
                                 // Write($"Spremam ({status})");
-                                _sendQueue.Enqueue((response, message.PId));
+                                _sendQueue.Enqueue((response, message.Pid));
                             }
                         }
                         break;

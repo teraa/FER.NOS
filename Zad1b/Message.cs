@@ -2,19 +2,19 @@ namespace NOS.Lab1.Zad1b
 {
     class Message
     {
-        public Message(MessageType type, int pId, int timestamp)
+        public Message(MessageType type, int pid, int timestamp)
         {
             Type = type;
-            PId = pId;
+            Pid = pid;
             Timestamp = timestamp;
         }
 
         public MessageType Type { get; }
-        public int PId { get; }
+        public int Pid { get; }
         public int Timestamp { get; }
 
         public override string ToString()
-            => $"Type={Type},PId={PId},Timestamp={Timestamp}";
+            => $"Type={Type},Pid={Pid},Timestamp={Timestamp}";
     }
 
     enum MessageType : int
