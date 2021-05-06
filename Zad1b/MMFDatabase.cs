@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Text;
 
 namespace NOS.Lab1.Zad1b
 {
