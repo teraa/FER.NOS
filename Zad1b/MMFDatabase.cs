@@ -16,9 +16,7 @@ namespace NOS.Lab1.Zad1b
         {
             _size = size;
             _mmf = MemoryMappedFile.CreateFromFile(filePath, FileMode.OpenOrCreate, null, size);
-
-            string fillerText = new string('\n', (int)size);
-            _filler = Encoding.ASCII.GetBytes(fillerText);
+            _filler = new byte[size];
         }
 
         public void Dispose()
