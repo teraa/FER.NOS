@@ -16,7 +16,7 @@ else
     echo "    N - broj procesa"
 fi
 
-echo "Starting $n processes"
+echo "Nodes: $n, Runs: $runs, DB: $db_file"
 trap 'kill $(jobs -p)' SIGINT SIGTERM
 
 for i in $(seq 1 $n); do
