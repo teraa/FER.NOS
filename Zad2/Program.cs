@@ -1,4 +1,5 @@
 using System;
+using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography;
@@ -25,20 +26,23 @@ namespace Zad2
 
         private readonly HashAlgorithmName _hashAlgorithmName;
         private readonly HashAlgorithm _hashAlgorithm;
-        private readonly SymmetricAlgorithmName _symmetricAlgorithmName;
         private readonly SymmetricAlgorithm _symmetricAlgorithm;
         private readonly RSA _rsa;
         private byte[]? _data;
 
-        public Program(HashAlgorithmName hashAlgorithmName, SymmetricAlgorithmName symmetricAlgorithmName)
+        public Program(string hashAlgorithmName, string symmetricAlgorithmName)
         {
-            _hashAlgorithmName = hashAlgorithmName;
-            _hashAlgorithm = HashAlgorithm.Create(hashAlgorithmName.Name!)!;
-            _symmetricAlgorithmName = symmetricAlgorithmName;
+            _hashAlgorithmName = hashAlgorithmName switch
+            {
+                "SHA256" => HashAlgorithmName.SHA256,
+                "SHA512" => HashAlgorithmName.SHA512,
+                _ => throw new ArgumentOutOfRangeException(nameof(hashAlgorithmName))
+            };
+            _hashAlgorithm = HashAlgorithm.Create(_hashAlgorithmName.Name!)!;
             _symmetricAlgorithm = symmetricAlgorithmName switch
             {
-                SymmetricAlgorithmName.AES => Aes.Create(),
-                SymmetricAlgorithmName.TripleDES => TripleDES.Create(),
+                "AES" => Aes.Create(),
+                "3DES" => TripleDES.Create(),
                 _ => throw new ArgumentOutOfRangeException(nameof(symmetricAlgorithmName)),
             };
             _rsa = RSA.Create();
@@ -57,56 +61,148 @@ namespace Zad2
 
         static void Main(string[] args)
         {
-            using var program = new Program(HashAlgorithmName.SHA256, SymmetricAlgorithmName.AES);
+            var rootCommand = new RootCommand();
+            var commandSign = new Command(name: "sign")
+            {
+                new Option<string>(
+                    aliases: new[] { "-i", "--input" },
+                    getDefaultValue: () => "data/in.txt",
+                    description: "Input data file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--priv", "--private-key" },
+                    getDefaultValue: () => "data/rsa",
+                    description: "Private key file for asymmetric encryption"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-h", "--hash" },
+                    getDefaultValue: () => "SHA256",
+                    description: "Hashing algorithm to use, allowed values: SHA256, SHA512."
+                ),
+                new Option<string>(
+                    aliases: new[] { "-o", "--output" },
+                    getDefaultValue: () => "data/sign.json",
+                    description: "Output file for the signature"
+                ),
+            };
+            var commandEnvelope = new Command(name: "envelope")
+            {
+                new Option<string>(
+                    aliases: new[] { "-i", "--input" },
+                    getDefaultValue: () => "data/in.txt",
+                    description: "Input data file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--sym" },
+                    getDefaultValue: () => "AES",
+                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--key" },
+                    getDefaultValue: () => "data/skey",
+                    description: "Secret key file for symmetric encryption"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--pub", "--public-key" },
+                    getDefaultValue: () => "data/rsa.pub",
+                    description: "Public key file for asymmetric encryption"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-o", "--output" },
+                    getDefaultValue: () => "data/envelope.json",
+                    description: "Output file for the envelope data"
+                ),
+            };
+            var commandSignEnvelope = new Command(name: "signenvelope")
+            {
+                new Option<string>(
+                    aliases: new[] { "-i", "--input" },
+                    getDefaultValue: () => "data/in.txt",
+                    description: "Input data file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--priv", "--private-key" },
+                    getDefaultValue: () => "data/rsa",
+                    description: "Private key file for asymmetric encryption"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-h", "--hash" },
+                    getDefaultValue: () => "SHA256",
+                    description: "Hashing algorithm to use, allowed values: SHA256, SHA512."
+                ),
+                new Option<string>(
+                    aliases: new[] { "--sym" },
+                    getDefaultValue: () => "AES",
+                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--key" },
+                    getDefaultValue: () => "data/skey",
+                    description: "Secret key file for symmetric encryption"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-o", "--output" },
+                    getDefaultValue: () => "data/signed_envelope.json",
+                    description: "Output file for the signed envelope data"
+                ),
+            };
 
-            program.ImportPrivateKey("data/rsa");
-            program.ImportKey("data/skey.json");
+            rootCommand.AddCommand(commandSign);
+            rootCommand.AddCommand(commandEnvelope);
+            rootCommand.AddCommand(commandSignEnvelope);
 
-            byte[] plainText = s_encoding.GetBytes("Tera");
+            rootCommand.Invoke(args);
 
-            Console.WriteLine();
-            var encrypted = program.SymEncrypt(plainText);
-            Console.WriteLine("Encrypted: " + Convert.ToBase64String(encrypted));
+            // using var program = new Program(HashAlgorithmName.SHA256, SymmetricAlgorithmName.AES);
 
+            // program.ImportPrivateKey("data/rsa");
+            // program.ImportKey("data/skey.json");
 
-            Console.WriteLine();
-            var decrypted = program.SymDecrypt(encrypted);
-            Console.WriteLine("Decrypted: " + s_encoding.GetString(decrypted));
+            // byte[] plainText = s_encoding.GetBytes("Tera");
 
-
-            Console.WriteLine();
-            var signature = program.Sign(plainText);
-            Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
+            // Console.WriteLine();
+            // var encrypted = program.SymEncrypt(plainText);
+            // Console.WriteLine("Encrypted: " + Convert.ToBase64String(encrypted));
 
 
-            Console.WriteLine();
-            var signatureSuccess = program.CheckSign(signature, plainText);
-            Console.WriteLine($"SignatureSucess: {signatureSuccess}");
+            // Console.WriteLine();
+            // var decrypted = program.SymDecrypt(encrypted);
+            // Console.WriteLine("Decrypted: " + s_encoding.GetString(decrypted));
 
 
-            Console.WriteLine();
-            var envelope = program.Envelope(plainText);
-            Console.WriteLine("Envelope");
-            Console.WriteLine("c1: " + Convert.ToBase64String(envelope.c1));
-            Console.WriteLine("c2: " + Convert.ToBase64String(envelope.c2));
+            // Console.WriteLine();
+            // var signature = program.Sign(plainText);
+            // Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
 
 
-            Console.WriteLine();
-            var envelopeSuccess = program.CheckEnvelope(envelope.c1, envelope.c2, out byte[]? envelopePlainText);
-            Console.WriteLine($"EnvelopeCheck: {envelopeSuccess}");
-            Console.WriteLine(s_encoding.GetString(envelopePlainText!));
+            // Console.WriteLine();
+            // var signatureSuccess = program.CheckSign(signature, plainText);
+            // Console.WriteLine($"SignatureSucess: {signatureSuccess}");
 
-            Console.WriteLine();
-            var signEnvelope = program.SignEnvelope(plainText);
-            Console.WriteLine("SignEnvelope");
-            Console.WriteLine("c1: " + Convert.ToBase64String(signEnvelope.c1));
-            Console.WriteLine("c2: " + Convert.ToBase64String(signEnvelope.c2));
-            Console.WriteLine("Signature: " + Convert.ToBase64String(signEnvelope.signature));
 
-            Console.WriteLine();
-            var signEnvelopeSuccess = program.CheckSignEnvelope(signEnvelope.c1, signEnvelope.c2, signEnvelope.signature, out byte[]? signEnvelopePlainText);
-            Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
-            Console.WriteLine(s_encoding.GetString(signEnvelopePlainText!));
+            // Console.WriteLine();
+            // var envelope = program.Envelope(plainText);
+            // Console.WriteLine("Envelope");
+            // Console.WriteLine("c1: " + Convert.ToBase64String(envelope.c1));
+            // Console.WriteLine("c2: " + Convert.ToBase64String(envelope.c2));
+
+
+            // Console.WriteLine();
+            // var envelopeSuccess = program.CheckEnvelope(envelope.c1, envelope.c2, out byte[]? envelopePlainText);
+            // Console.WriteLine($"EnvelopeCheck: {envelopeSuccess}");
+            // Console.WriteLine(s_encoding.GetString(envelopePlainText!));
+
+            // Console.WriteLine();
+            // var signEnvelope = program.SignEnvelope(plainText);
+            // Console.WriteLine("SignEnvelope");
+            // Console.WriteLine("c1: " + Convert.ToBase64String(signEnvelope.c1));
+            // Console.WriteLine("c2: " + Convert.ToBase64String(signEnvelope.c2));
+            // Console.WriteLine("Signature: " + Convert.ToBase64String(signEnvelope.signature));
+
+            // Console.WriteLine();
+            // var signEnvelopeSuccess = program.CheckSignEnvelope(signEnvelope.c1, signEnvelope.c2, signEnvelope.signature, out byte[]? signEnvelopePlainText);
+            // Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
+            // Console.WriteLine(s_encoding.GetString(signEnvelopePlainText!));
 
             // program.ImportKey("data/skey.json");
             // program.ImportPrivateKey("data/rsa");
