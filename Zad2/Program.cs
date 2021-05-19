@@ -1,5 +1,6 @@
 using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography;
@@ -59,97 +60,160 @@ namespace Zad2
                 : s_encoding.GetBytes(value);
         }
 
+        static void SignCommandHandler(
+            string inputFile,
+            string privateKeyFile,
+            string hashAlgorithm,
+            string outputFile)
+        {
+
+            using var program = new Program(hashAlgorithm, "AES"); // TODO
+            program.ImportPrivateKey(privateKeyFile);
+
+            var plainText = File.ReadAllBytes(inputFile);
+            var signature = program.Sign(plainText);
+
+            Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
+            // TODO: write to file
+        }
+
+        static void EnvelopeCommandHandler(
+            string inputFile,
+            string symmetricAlgorithm,
+            string keyFile,
+            string publicKeyFile,
+            string outputFile)
+        {
+            using var program = new Program("SHA256", symmetricAlgorithm); // TODO
+            program.ImportKey(keyFile);
+            program.ImportPublicKey(publicKeyFile);
+
+            var plainText = File.ReadAllBytes(inputFile);
+            var (c1, c2) = program.Envelope(plainText);
+
+            Console.WriteLine("Envelope");
+            Console.WriteLine($"c1: {Convert.ToBase64String(c1)}");
+            Console.WriteLine($"c2: {Convert.ToBase64String(c2)}");
+            // TODO: write to file
+        }
+
+        static void SignEnvelopeCommandHandler(
+            string inputFile,
+            string privateKeyFile,
+            string hashAlgorithm,
+            string symmetricAlgorithm,
+            string keyFile,
+            string outputFile)
+        {
+            using var program = new Program(hashAlgorithm, symmetricAlgorithm);
+            program.ImportPrivateKey(privateKeyFile);
+            program.ImportKey(keyFile);
+
+            var plainText = File.ReadAllBytes(inputFile);
+
+            var (c1, c2, signature) = program.SignEnvelope(plainText);
+
+            Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
+            Console.WriteLine($"c1: {Convert.ToBase64String(c1)}");
+            Console.WriteLine($"c2: {Convert.ToBase64String(c2)}");
+            // TODO: write to file
+        }
+
         static void Main(string[] args)
         {
             var rootCommand = new RootCommand();
-            var commandSign = new Command(name: "sign")
+            var signCommand = new Command(name: "sign")
             {
                 new Option<string>(
-                    aliases: new[] { "-i", "--input" },
+                    aliases: new[] { "-i", "--input-file" },
                     getDefaultValue: () => "data/in.txt",
                     description: "Input data file"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--priv", "--private-key" },
+                    aliases: new[] { "--priv", "--private-key-file" },
                     getDefaultValue: () => "data/rsa",
                     description: "Private key file for asymmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "-h", "--hash" },
+                    aliases: new[] { "-h", "--hash", "--hash-algorithm" },
                     getDefaultValue: () => "SHA256",
                     description: "Hashing algorithm to use, allowed values: SHA256, SHA512."
                 ),
                 new Option<string>(
-                    aliases: new[] { "-o", "--output" },
+                    aliases: new[] { "-o", "--output-file" },
                     getDefaultValue: () => "data/sign.json",
                     description: "Output file for the signature"
                 ),
             };
-            var commandEnvelope = new Command(name: "envelope")
+            var envelopeCommand = new Command(name: "envelope")
             {
                 new Option<string>(
-                    aliases: new[] { "-i", "--input" },
+                    aliases: new[] { "-i", "--input-file" },
                     getDefaultValue: () => "data/in.txt",
                     description: "Input data file"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--sym" },
+                    aliases: new[] { "--sym", "--symmetric-algorithm" },
                     getDefaultValue: () => "AES",
                     description: "Symmetric algorithm to use, allowed values: AES, 3DES"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--key" },
-                    getDefaultValue: () => "data/skey",
+                    aliases: new[] { "--key", "--key-file" },
+                    getDefaultValue: () => "data/skey.json",
                     description: "Secret key file for symmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--pub", "--public-key" },
+                    aliases: new[] { "--pub", "--public-key-file" },
                     getDefaultValue: () => "data/rsa.pub",
                     description: "Public key file for asymmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "-o", "--output" },
+                    aliases: new[] { "-o", "--output-file" },
                     getDefaultValue: () => "data/envelope.json",
                     description: "Output file for the envelope data"
                 ),
             };
-            var commandSignEnvelope = new Command(name: "signenvelope")
+            var signEnvelopeCommand = new Command(name: "signenvelope")
             {
                 new Option<string>(
-                    aliases: new[] { "-i", "--input" },
+                    aliases: new[] { "-i", "--input-file" },
                     getDefaultValue: () => "data/in.txt",
                     description: "Input data file"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--priv", "--private-key" },
+                    aliases: new[] { "--priv", "--private-key-file" },
                     getDefaultValue: () => "data/rsa",
                     description: "Private key file for asymmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "-h", "--hash" },
+                    aliases: new[] { "-h", "--hash", "--hash-algorithm" },
                     getDefaultValue: () => "SHA256",
                     description: "Hashing algorithm to use, allowed values: SHA256, SHA512."
                 ),
                 new Option<string>(
-                    aliases: new[] { "--sym" },
+                    aliases: new[] { "--sym", "--symmetric-algorithm" },
                     getDefaultValue: () => "AES",
                     description: "Symmetric algorithm to use, allowed values: AES, 3DES"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--key" },
-                    getDefaultValue: () => "data/skey",
+                    aliases: new[] { "--key", "--key-file" },
+                    getDefaultValue: () => "data/skey.json",
                     description: "Secret key file for symmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "-o", "--output" },
+                    aliases: new[] { "-o", "--output-file" },
                     getDefaultValue: () => "data/signed_envelope.json",
                     description: "Output file for the signed envelope data"
                 ),
             };
 
-            rootCommand.AddCommand(commandSign);
-            rootCommand.AddCommand(commandEnvelope);
-            rootCommand.AddCommand(commandSignEnvelope);
+            rootCommand.AddCommand(signCommand);
+            rootCommand.AddCommand(envelopeCommand);
+            rootCommand.AddCommand(signEnvelopeCommand);
+
+            signCommand.Handler = CommandHandler.Create<string, string, string, string>(SignCommandHandler);
+            envelopeCommand.Handler = CommandHandler.Create<string, string, string, string, string>(EnvelopeCommandHandler);
+            signEnvelopeCommand.Handler = CommandHandler.Create<string, string, string, string, string, string>(SignEnvelopeCommandHandler);
 
             rootCommand.Invoke(args);
 
