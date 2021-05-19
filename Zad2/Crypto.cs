@@ -23,21 +23,28 @@ namespace Zad2
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        private readonly HashAlgorithmName _hashAlgorithmName;
-        private readonly HashAlgorithm _hashAlgorithm;
+        private HashAlgorithmName _hashAlgorithmName;
+        private HashAlgorithm _hashAlgorithm;
         private readonly string _symmetricAlgorithmName;
         private readonly SymmetricAlgorithm _symmetricAlgorithm;
         private readonly RSA _rsa;
 
-        public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
+        public void SetHash(string name)
         {
-            _hashAlgorithmName = hashAlgorithmName switch
+            _hashAlgorithmName = name switch
             {
                 "SHA256" => HashAlgorithmName.SHA256,
                 "SHA512" => HashAlgorithmName.SHA512,
-                _ => throw new ArgumentOutOfRangeException(nameof(hashAlgorithmName))
+                _ => throw new ArgumentOutOfRangeException(nameof(name))
             };
+
             _hashAlgorithm = HashAlgorithm.Create(_hashAlgorithmName.Name!)!;
+        }
+
+        public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
+        {
+            _hashAlgorithm = null!; // Suppress warning
+            SetHash(hashAlgorithmName);
             _symmetricAlgorithmName = symmetricAlgorithmName;
             _symmetricAlgorithm = _symmetricAlgorithmName switch
             {
@@ -190,6 +197,16 @@ namespace Zad2
             return signature;
         }
 
+        public bool CheckSign(string signatureFile, byte[] plainText)
+        {
+            var json = File.ReadAllText(signatureFile);
+            var data = JsonSerializer.Deserialize<CryptoData>(json, s_jsonOptions)!;
+
+            SetHash(data.Methods![0]);
+
+            return CheckSign(data.Signature!, plainText);
+        }
+
         public bool CheckSign(byte[] signature, byte[] plainText)
         {
             if (signature is null) throw new ArgumentNullException(nameof(signature));
@@ -249,6 +266,7 @@ namespace Zad2
 
             var (c1, c2) = Envelope(plainText);
 
+            // concatenate
             byte[] signatureSource = new byte[c1.Length + c2.Length];
             c1.CopyTo(signatureSource, 0);
             c2.CopyTo(signatureSource, c1.Length);
@@ -279,6 +297,7 @@ namespace Zad2
             if (c1 is null) throw new ArgumentNullException(nameof(c1));
             if (c2 is null) throw new ArgumentNullException(nameof(c2));
 
+            // concatenate
             byte[] signatureSource = new byte[c1.Length + c2.Length];
             c1.CopyTo(signatureSource, 0);
             c2.CopyTo(signatureSource, c1.Length);
