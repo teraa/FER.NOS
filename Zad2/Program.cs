@@ -130,7 +130,7 @@ namespace Zad2
                     description: "Input data file"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--priv", "--private-key-file" },
+                    aliases: new[] { "-s", "--priv", "--private-key-file" },
                     getDefaultValue: () => "data/rsa",
                     description: "Private key file for asymmetric encryption"
                 ),
@@ -158,12 +158,12 @@ namespace Zad2
                     description: "Symmetric algorithm to use, allowed values: AES, 3DES"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--key", "--key-file" },
+                    aliases: new[] { "-k", "--key", "--key-file" },
                     getDefaultValue: () => "data/skey.json",
                     description: "Secret key file for symmetric encryption"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--pub", "--public-key-file" },
+                    aliases: new[] { "-p", "--pub", "--public-key-file" },
                     getDefaultValue: () => "data/rsa.pub",
                     description: "Public key file for asymmetric encryption"
                 ),
@@ -181,7 +181,7 @@ namespace Zad2
                     description: "Input data file"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--priv", "--private-key-file" },
+                    aliases: new[] { "-s", "--priv", "--private-key-file" },
                     getDefaultValue: () => "data/rsa",
                     description: "Private key file for asymmetric encryption"
                 ),
@@ -196,7 +196,7 @@ namespace Zad2
                     description: "Symmetric algorithm to use, allowed values: AES, 3DES"
                 ),
                 new Option<string>(
-                    aliases: new[] { "--key", "--key-file" },
+                    aliases: new[] { "-k", "--key", "--key-file" },
                     getDefaultValue: () => "data/skey.json",
                     description: "Secret key file for symmetric encryption"
                 ),
