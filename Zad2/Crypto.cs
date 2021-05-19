@@ -25,6 +25,7 @@ namespace Zad2
 
         private readonly HashAlgorithmName _hashAlgorithmName;
         private readonly HashAlgorithm _hashAlgorithm;
+        private readonly string _symmetricAlgorithmName;
         private readonly SymmetricAlgorithm _symmetricAlgorithm;
         private readonly RSA _rsa;
         private byte[]? _data;
@@ -38,7 +39,8 @@ namespace Zad2
                 _ => throw new ArgumentOutOfRangeException(nameof(hashAlgorithmName))
             };
             _hashAlgorithm = HashAlgorithm.Create(_hashAlgorithmName.Name!)!;
-            _symmetricAlgorithm = symmetricAlgorithmName switch
+            _symmetricAlgorithmName = symmetricAlgorithmName;
+            _symmetricAlgorithm = _symmetricAlgorithmName switch
             {
                 "AES" => Aes.Create(),
                 "3DES" => TripleDES.Create(),
@@ -94,7 +96,7 @@ namespace Zad2
             var key = JsonSerializer.Deserialize<CryptoData>(content, s_jsonOptions)!;
 
             _symmetricAlgorithm.IV = key.IV!;
-            _symmetricAlgorithm.KeySize = key.KeySize!.Value;
+            _symmetricAlgorithm.KeySize = key.KeySizes![0];
             _symmetricAlgorithm.Key = key.SecretKey!;
             _symmetricAlgorithm.Mode = key.CipherMode!.Value;
         }
@@ -105,7 +107,7 @@ namespace Zad2
             {
                 Description = "Secret key",
                 IV = _symmetricAlgorithm.IV,
-                KeySize = _symmetricAlgorithm.KeySize,
+                KeySizes = new int[] { _symmetricAlgorithm.KeySize },
                 SecretKey = _symmetricAlgorithm.Key,
                 CipherMode = _symmetricAlgorithm.Mode,
             };
@@ -157,11 +159,26 @@ namespace Zad2
             return s_encoding.GetBytes(plainText);
         }
 
-        public byte[] Sign(byte[] plainText)
+        public byte[] Sign(byte[] plainText, string? filePath = null)
         {
             if (plainText is null) throw new ArgumentNullException(nameof(plainText));
 
             byte[] signature = _rsa.SignData(plainText, _hashAlgorithmName, s_rsaSignaturePadding);
+
+            if (filePath is not null)
+            {
+                var data = new CryptoData
+                {
+                    Description = "Signature",
+                    Methods = new string[] { _hashAlgorithmName.Name!, "RSA" },
+                    KeySizes = new int[] { _rsa.KeySize },
+                    Signature = signature,
+                };
+
+                var json = JsonSerializer.Serialize(data, s_jsonOptions);
+                File.WriteAllText(filePath, json);
+            }
+
             return signature;
         }
 
@@ -173,12 +190,27 @@ namespace Zad2
             return _rsa.VerifyData(plainText, signature, _hashAlgorithmName, s_rsaSignaturePadding);
         }
 
-        public (byte[] c1, byte[] c2) Envelope(byte[] plainText)
+        public (byte[] c1, byte[] c2) Envelope(byte[] plainText, string? filePath = null)
         {
             if (plainText is null) throw new ArgumentNullException(nameof(plainText));
 
             byte[] c1 = SymEncrypt(plainText);
             byte[] c2 = _rsa.Encrypt(_symmetricAlgorithm.Key, s_rsaEncryptionPadding);
+
+            if (filePath is not null)
+            {
+                var data = new CryptoData
+                {
+                    Description = "Envelope",
+                    Methods = new string[] { _symmetricAlgorithmName, "RSA" },
+                    KeySizes = new int[] { _symmetricAlgorithm.KeySize, _rsa.KeySize },
+                    EnvelopeData = c1,
+                    EnvelopeCryptKey = c2,
+                };
+
+                var json = JsonSerializer.Serialize(data, s_jsonOptions);
+                File.WriteAllText(filePath, json);
+            }
 
             return (c1, c2);
         }
@@ -203,7 +235,7 @@ namespace Zad2
             }
         }
 
-        public (byte[] c1, byte[] c2, byte[] signature) SignEnvelope(byte[] plainText)
+        public (byte[] c1, byte[] c2, byte[] signature) SignEnvelope(byte[] plainText, string? filePath = null)
         {
             if (plainText is null) throw new ArgumentNullException(nameof(plainText));
 
@@ -214,6 +246,22 @@ namespace Zad2
             c2.CopyTo(signatureSource, c1.Length);
 
             byte[] signature = _rsa.SignData(signatureSource, _hashAlgorithmName, s_rsaSignaturePadding);
+
+            if (filePath is not null)
+            {
+                var data = new CryptoData
+                {
+                    Description = "Envelope Signature",
+                    Methods = new string[] { _symmetricAlgorithmName, "RSA", _hashAlgorithmName.Name! },
+                    KeySizes = new int[] { _symmetricAlgorithm.KeySize, _rsa.KeySize },
+                    EnvelopeData = c1,
+                    EnvelopeCryptKey = c2,
+                    Signature = signature,
+                };
+
+                var json = JsonSerializer.Serialize(data, s_jsonOptions);
+                File.WriteAllText(filePath, json);
+            }
 
             return (c1, c2, signature);
         }

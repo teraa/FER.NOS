@@ -18,10 +18,9 @@ namespace Zad2
             program.ImportPrivateKey(privateKeyFile);
 
             var plainText = File.ReadAllBytes(inputFile);
-            var signature = program.Sign(plainText);
+            var signature = program.Sign(plainText, outputFile);
 
             Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
-            // TODO: write to file
         }
 
         static void EnvelopeCommandHandler(
@@ -36,12 +35,11 @@ namespace Zad2
             program.ImportPublicKey(publicKeyFile);
 
             var plainText = File.ReadAllBytes(inputFile);
-            var (c1, c2) = program.Envelope(plainText);
+            var (c1, c2) = program.Envelope(plainText, outputFile);
 
             Console.WriteLine("Envelope");
             Console.WriteLine($"c1: {Convert.ToBase64String(c1)}");
             Console.WriteLine($"c2: {Convert.ToBase64String(c2)}");
-            // TODO: write to file
         }
 
         static void SignEnvelopeCommandHandler(
@@ -58,12 +56,11 @@ namespace Zad2
 
             var plainText = File.ReadAllBytes(inputFile);
 
-            var (c1, c2, signature) = program.SignEnvelope(plainText);
+            var (c1, c2, signature) = program.SignEnvelope(plainText, outputFile);
 
             Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
             Console.WriteLine($"c1: {Convert.ToBase64String(c1)}");
             Console.WriteLine($"c2: {Convert.ToBase64String(c2)}");
-            // TODO: write to file
         }
 
         static void Main(string[] args)
@@ -106,7 +103,7 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-k", "--key", "--key-file" },
-                    getDefaultValue: () => "data/skey.json",
+                    getDefaultValue: () => "data/key.json",
                     description: "Secret key file for symmetric encryption"
                 ),
                 new Option<string>(
@@ -144,13 +141,13 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-k", "--key", "--key-file" },
-                    getDefaultValue: () => "data/skey.json",
+                    getDefaultValue: () => "data/key.json",
                     description: "Secret key file for symmetric encryption"
                 ),
                 new Option<string>(
                     aliases: new[] { "-o", "--output-file" },
-                    getDefaultValue: () => "data/signed_envelope.json",
-                    description: "Output file for the signed envelope data"
+                    getDefaultValue: () => "data/sign_envelope.json",
+                    description: "Output file for the envelope and signature data"
                 ),
             };
 
@@ -164,10 +161,10 @@ namespace Zad2
 
             rootCommand.Invoke(args);
 
-            // using var program = new Program(HashAlgorithmName.SHA256, SymmetricAlgorithmName.AES);
+            // using var program = new Crypto("SHA256", "AES");
 
             // program.ImportPrivateKey("data/rsa");
-            // program.ImportKey("data/skey.json");
+            // program.ImportKey("data/key.json");
 
             // byte[] plainText = s_encoding.GetBytes("Tera");
 
@@ -215,11 +212,11 @@ namespace Zad2
             // Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
             // Console.WriteLine(s_encoding.GetString(signEnvelopePlainText!));
 
-            // program.ImportKey("data/skey.json");
+            // program.ImportKey("data/key.json");
             // program.ImportPrivateKey("data/rsa");
             // program.ImportPublicKey("data/rsa.pub");
 
-            // program.ExportKey("data/skey.json");
+            // program.ExportKey("data/key.json");
             // program.ExportPrivateKey("data/rsa");
             // program.ExportPublicKey("data/rsa.pub");
         }
