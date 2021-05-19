@@ -11,9 +11,9 @@ namespace Zad2
         public int[]? KeySizes { get; set; }
         public byte[]? SecretKey { get; set; }
         public CipherMode? CipherMode { get; set; }
-        // public string? Modulus { get; set; }
-        // public string? PubExp { get; set; }
-        // public string? PrivExp { get; set; }
+        public byte[]? Modulus { get; set; }
+        public byte[]? PubExp { get; set; }
+        public byte[]? PrivExp { get; set; }
         public byte[]? Signature { get; set; }
         public string? Data { get; set; }
         public byte[]? EnvelopeData { get; set; }

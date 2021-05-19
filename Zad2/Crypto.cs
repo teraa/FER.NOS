@@ -28,7 +28,6 @@ namespace Zad2
         private readonly string _symmetricAlgorithmName;
         private readonly SymmetricAlgorithm _symmetricAlgorithm;
         private readonly RSA _rsa;
-        private byte[]? _data;
 
         public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
         {
@@ -49,17 +48,6 @@ namespace Zad2
             _rsa = RSA.Create();
         }
 
-        public string? DataString
-        {
-            get => _data is null
-                ? null
-                : s_encoding.GetString(_data);
-
-            set => _data = value is null
-                ? null
-                : s_encoding.GetBytes(value);
-        }
-
         #region io
         public void GenerateKeyPair(int keySize, string publicKeyFile, string privateKeyFile)
         {
@@ -71,8 +59,30 @@ namespace Zad2
             string pub = Convert.ToBase64String(pubBytes);
             string priv = Convert.ToBase64String(privBytes);
 
-            File.WriteAllText(publicKeyFile, pub);
-            File.WriteAllText(privateKeyFile, priv);
+            var param = _rsa.ExportParameters(true);
+
+            var data = new CryptoData
+            {
+                Description = "Public key",
+                Methods = new[] { "RSA" },
+                KeySizes = new[] { _rsa.KeySize },
+                Modulus = param.Modulus,
+                PubExp = param.Exponent,
+                Data = pub, // TODO: remove
+            };
+
+            var json = JsonSerializer.Serialize(data, s_jsonOptions);
+
+            File.WriteAllText(publicKeyFile, json);
+
+            data.Description = "Private key";
+            data.PubExp = null;
+            data.PrivExp = param.D;
+            data.Data = priv;
+
+            json = JsonSerializer.Serialize(data, s_jsonOptions);
+
+            File.WriteAllText(privateKeyFile, json);
         }
 
         public void GenerateKey(int keySize, CipherMode cipherMode, string keyFile)
@@ -95,30 +105,18 @@ namespace Zad2
 
         public void ImportPrivateKey(string filePath)
         {
-            string content = File.ReadAllText(filePath);
-            byte[] bytes = Convert.FromBase64String(content);
+            string json = File.ReadAllText(filePath);
+            var data = JsonSerializer.Deserialize<CryptoData>(json, s_jsonOptions)!;
+            byte[] bytes = Convert.FromBase64String(data.Data!);
             _rsa.ImportRSAPrivateKey(bytes, out _);
-        }
-
-        public void ExportPrivateKey(string filePath)
-        {
-            byte[] privateKey = _rsa.ExportRSAPrivateKey();
-            string content = Convert.ToBase64String(privateKey);
-            File.WriteAllText(filePath, content);
         }
 
         public void ImportPublicKey(string filePath)
         {
-            string content = File.ReadAllText(filePath);
-            byte[] bytes = Convert.FromBase64String(content);
+            string json = File.ReadAllText(filePath);
+            var data = JsonSerializer.Deserialize<CryptoData>(json, s_jsonOptions)!;
+            byte[] bytes = Convert.FromBase64String(data.Data!);
             _rsa.ImportRSAPublicKey(bytes, out _);
-        }
-
-        public void ExportPublicKey(string filePath)
-        {
-            byte[] publicKey = _rsa.ExportRSAPublicKey();
-            string content = Convert.ToBase64String(publicKey);
-            File.WriteAllText(filePath, content);
         }
 
         public void ImportKey(string filePath)
@@ -130,27 +128,6 @@ namespace Zad2
             _symmetricAlgorithm.KeySize = key.KeySizes![0];
             _symmetricAlgorithm.Key = key.SecretKey!;
             _symmetricAlgorithm.Mode = key.CipherMode!.Value;
-        }
-
-        public void ExportKey(string filePath)
-        {
-            var key = new CryptoData
-            {
-                Description = "Secret key",
-                IV = _symmetricAlgorithm.IV,
-                KeySizes = new int[] { _symmetricAlgorithm.KeySize },
-                SecretKey = _symmetricAlgorithm.Key,
-                CipherMode = _symmetricAlgorithm.Mode,
-            };
-
-            string content = JsonSerializer.Serialize(key, s_jsonOptions);
-            File.WriteAllText(filePath, content);
-        }
-
-        public void ImportData(string filePath)
-        {
-            string content = File.ReadAllText(filePath);
-            _data = s_encoding.GetBytes(content);
         }
         #endregion
 

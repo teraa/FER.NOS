@@ -99,7 +99,7 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-s", "--priv", "--private-key-file" },
-                    getDefaultValue: () => "data/rsa",
+                    getDefaultValue: () => "data/rsa.json",
                     description: "Private key file for asymmetric encryption"
                 ),
                 new Option<string>(
@@ -132,7 +132,7 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-p", "--pub", "--public-key-file" },
-                    getDefaultValue: () => "data/rsa.pub",
+                    getDefaultValue: () => "data/rsa_pub.json",
                     description: "Public key file for asymmetric encryption"
                 ),
                 new Option<string>(
@@ -150,7 +150,7 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-s", "--priv", "--private-key-file" },
-                    getDefaultValue: () => "data/rsa",
+                    getDefaultValue: () => "data/rsa.json",
                     description: "Private key file for asymmetric encryption"
                 ),
                 new Option<string>(
@@ -184,12 +184,12 @@ namespace Zad2
                 ),
                 new Option<string>(
                     aliases: new[] { "-p", "--pub", "--public-key-file" },
-                    getDefaultValue: () => "data/rsa.pub",
+                    getDefaultValue: () => "data/rsa_pub.json",
                     description: "Output file for the RSA public key."
                 ),
                 new Option<string>(
                     aliases: new[] { "-s", "--priv", "--private-key-file" },
-                    getDefaultValue: () => "data/rsa",
+                    getDefaultValue: () => "data/rsa.json",
                     description: "Output file for the RSA private key."
                 ),
             };
@@ -235,7 +235,7 @@ namespace Zad2
 
             // using var crypto = new Crypto("SHA256", "AES");
 
-            // crypto.ImportPrivateKey("data/rsa");
+            // crypto.ImportPrivateKey("data/rsa.json");
             // crypto.ImportKey("data/key.json");
 
             // byte[] plainText = s_encoding.GetBytes("Tera");
@@ -285,12 +285,12 @@ namespace Zad2
             // Console.WriteLine(s_encoding.GetString(signEnvelopePlainText!));
 
             // crypto.ImportKey("data/key.json");
-            // crypto.ImportPrivateKey("data/rsa");
-            // crypto.ImportPublicKey("data/rsa.pub");
+            // crypto.ImportPrivateKey("data/rsa.json");
+            // crypto.ImportPublicKey("data/rsa_pub.json");
 
             // crypto.ExportKey("data/key.json");
-            // crypto.ExportPrivateKey("data/rsa");
-            // crypto.ExportPublicKey("data/rsa.pub");
+            // crypto.ExportPrivateKey("data/rsa.json");
+            // crypto.ExportPublicKey("data/rsa_pub.json");
         }
     }
 }
