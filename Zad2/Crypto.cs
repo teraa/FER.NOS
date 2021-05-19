@@ -30,7 +30,7 @@ namespace Zad2
         private readonly RSA _rsa;
         private byte[]? _data;
 
-        public Crypto(string hashAlgorithmName, string symmetricAlgorithmName)
+        public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
         {
             _hashAlgorithmName = hashAlgorithmName switch
             {
@@ -60,8 +60,39 @@ namespace Zad2
                 : s_encoding.GetBytes(value);
         }
 
-
         #region io
+        public void GenerateKeyPair(int keySize, string publicKeyFile, string privateKeyFile)
+        {
+            _rsa.KeySize = keySize;
+
+            byte[] pubBytes = _rsa.ExportRSAPublicKey();
+            byte[] privBytes = _rsa.ExportRSAPrivateKey();
+
+            string pub = Convert.ToBase64String(pubBytes);
+            string priv = Convert.ToBase64String(privBytes);
+
+            File.WriteAllText(publicKeyFile, pub);
+            File.WriteAllText(privateKeyFile, priv);
+        }
+
+        public void GenerateKey(int keySize, CipherMode cipherMode, string keyFile)
+        {
+            _symmetricAlgorithm.Mode = cipherMode;
+            _symmetricAlgorithm.KeySize = keySize;
+
+            var key = new CryptoData
+            {
+                Description = "Secret key",
+                IV = _symmetricAlgorithm.IV,
+                KeySizes = new int[] { _symmetricAlgorithm.KeySize },
+                SecretKey = _symmetricAlgorithm.Key,
+                CipherMode = _symmetricAlgorithm.Mode,
+            };
+
+            string json = JsonSerializer.Serialize(key, s_jsonOptions);
+            File.WriteAllText(keyFile, json);
+        }
+
         public void ImportPrivateKey(string filePath)
         {
             string content = File.ReadAllText(filePath);
@@ -92,8 +123,8 @@ namespace Zad2
 
         public void ImportKey(string filePath)
         {
-            string content = File.ReadAllText(filePath);
-            var key = JsonSerializer.Deserialize<CryptoData>(content, s_jsonOptions)!;
+            string json = File.ReadAllText(filePath);
+            var key = JsonSerializer.Deserialize<CryptoData>(json, s_jsonOptions)!;
 
             _symmetricAlgorithm.IV = key.IV!;
             _symmetricAlgorithm.KeySize = key.KeySizes![0];
