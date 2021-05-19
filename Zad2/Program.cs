@@ -178,62 +178,62 @@ namespace Zad2
 
             rootCommand.Invoke(args);
 
-            return;
+            // return;
 
-            using var crypto = new Crypto();
+            // using var crypto = new Crypto();
 
-            crypto.ImportPrivateKey("data/rsa.json");
-            crypto.ImportKey("data/key.json");
+            // crypto.ImportPrivateKey("data/rsa.json");
+            // crypto.ImportKey("data/key.json");
 
-            byte[] plainText = Encoding.UTF8.GetBytes("Tera");
+            // byte[] plainText = Encoding.UTF8.GetBytes("Tera");
 
-            Console.WriteLine();
-            var encrypted = crypto.SymEncrypt(plainText);
-            Console.WriteLine("Encrypted: " + Convert.ToBase64String(encrypted));
-
-
-            Console.WriteLine();
-            var decrypted = crypto.SymDecrypt(encrypted);
-            Console.WriteLine("Decrypted: " + Encoding.UTF8.GetString(decrypted));
+            // Console.WriteLine();
+            // var encrypted = crypto.SymEncrypt(plainText);
+            // Console.WriteLine("Encrypted: " + Convert.ToBase64String(encrypted));
 
 
-            Console.WriteLine();
-            var signature = crypto.Sign(plainText);
-            Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
+            // Console.WriteLine();
+            // var decrypted = crypto.SymDecrypt(encrypted);
+            // Console.WriteLine("Decrypted: " + Encoding.UTF8.GetString(decrypted));
 
 
-            Console.WriteLine();
-            var signatureSuccess = crypto.CheckSign(signature, plainText);
-            Console.WriteLine($"SignatureSucess: {signatureSuccess}");
+            // Console.WriteLine();
+            // var signature = crypto.Sign(plainText);
+            // Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
 
 
-            Console.WriteLine();
-            var envelope = crypto.Envelope(plainText);
-            Console.WriteLine("Envelope");
-            Console.WriteLine("c1: " + Convert.ToBase64String(envelope.c1));
-            Console.WriteLine("c2: " + Convert.ToBase64String(envelope.c2));
+            // Console.WriteLine();
+            // var signatureSuccess = crypto.CheckSign(signature, plainText);
+            // Console.WriteLine($"SignatureSucess: {signatureSuccess}");
 
 
-            Console.WriteLine();
-            var envelopeSuccess = crypto.CheckEnvelope(envelope.c1, envelope.c2, out byte[]? envelopePlainText);
-            Console.WriteLine($"EnvelopeCheck: {envelopeSuccess}");
-            Console.WriteLine(Encoding.UTF8.GetString(envelopePlainText!));
+            // Console.WriteLine();
+            // var envelope = crypto.Envelope(plainText);
+            // Console.WriteLine("Envelope");
+            // Console.WriteLine("c1: " + Convert.ToBase64String(envelope.c1));
+            // Console.WriteLine("c2: " + Convert.ToBase64String(envelope.c2));
 
-            Console.WriteLine();
-            var signEnvelope = crypto.SignEnvelope(plainText);
-            Console.WriteLine("SignEnvelope");
-            Console.WriteLine("c1: " + Convert.ToBase64String(signEnvelope.c1));
-            Console.WriteLine("c2: " + Convert.ToBase64String(signEnvelope.c2));
-            Console.WriteLine("Signature: " + Convert.ToBase64String(signEnvelope.signature));
 
-            Console.WriteLine();
-            var signEnvelopeSuccess = crypto.CheckSignEnvelope(signEnvelope.c1, signEnvelope.c2, signEnvelope.signature, out byte[]? signEnvelopePlainText);
-            Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
-            Console.WriteLine(Encoding.UTF8.GetString(signEnvelopePlainText!));
+            // Console.WriteLine();
+            // var envelopeSuccess = crypto.CheckEnvelope(envelope.c1, envelope.c2, out byte[]? envelopePlainText);
+            // Console.WriteLine($"EnvelopeCheck: {envelopeSuccess}");
+            // Console.WriteLine(Encoding.UTF8.GetString(envelopePlainText!));
 
-            crypto.ImportKey("data/key.json");
-            crypto.ImportPrivateKey("data/rsa.json");
-            crypto.ImportPublicKey("data/rsa_pub.json");
+            // Console.WriteLine();
+            // var signEnvelope = crypto.SignEnvelope(plainText);
+            // Console.WriteLine("SignEnvelope");
+            // Console.WriteLine("c1: " + Convert.ToBase64String(signEnvelope.c1));
+            // Console.WriteLine("c2: " + Convert.ToBase64String(signEnvelope.c2));
+            // Console.WriteLine("Signature: " + Convert.ToBase64String(signEnvelope.signature));
+
+            // Console.WriteLine();
+            // var signEnvelopeSuccess = crypto.CheckSignEnvelope(signEnvelope.c1, signEnvelope.c2, signEnvelope.signature, out byte[]? signEnvelopePlainText);
+            // Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
+            // Console.WriteLine(Encoding.UTF8.GetString(signEnvelopePlainText!));
+
+            // crypto.ImportKey("data/key.json");
+            // crypto.ImportPrivateKey("data/rsa.json");
+            // crypto.ImportPublicKey("data/rsa_pub.json");
         }
 
         static void SignCommandHandler(
