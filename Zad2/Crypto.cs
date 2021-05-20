@@ -24,9 +24,9 @@ namespace Zad2
         public static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         private HashAlgorithmName _hashAlgorithmName;
-        private HashAlgorithm _hashAlgorithm;
-        private readonly string _symmetricAlgorithmName;
-        private readonly SymmetricAlgorithm _symmetricAlgorithm;
+        private HashAlgorithm _hashAlgorithm = null!;
+        private string _symmetricAlgorithmName = null!;
+        private SymmetricAlgorithm _symmetricAlgorithm = null!;
         private readonly RSA _rsa;
 
         public void SetHash(string name)
@@ -41,17 +41,21 @@ namespace Zad2
             _hashAlgorithm = HashAlgorithm.Create(_hashAlgorithmName.Name!)!;
         }
 
-        public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
+        public void SetSym(string name)
         {
-            _hashAlgorithm = null!; // Suppress warning
-            SetHash(hashAlgorithmName);
-            _symmetricAlgorithmName = symmetricAlgorithmName;
-            _symmetricAlgorithm = _symmetricAlgorithmName switch
+            _symmetricAlgorithmName = name;
+            _symmetricAlgorithm = name switch
             {
                 "AES" => Aes.Create(),
                 "3DES" => TripleDES.Create(),
-                _ => throw new ArgumentOutOfRangeException(nameof(symmetricAlgorithmName)),
+                _ => throw new ArgumentOutOfRangeException(nameof(name)),
             };
+        }
+
+        public Crypto(string hashAlgorithmName = "SHA256", string symmetricAlgorithmName = "AES")
+        {
+            SetHash(hashAlgorithmName);
+            SetSym(symmetricAlgorithmName);
             _rsa = RSA.Create();
         }
 
@@ -109,6 +113,7 @@ namespace Zad2
                 KeySizes = new int[] { _symmetricAlgorithm.KeySize },
                 SecretKey = _symmetricAlgorithm.Key,
                 CipherMode = _symmetricAlgorithm.Mode,
+                Methods = new[] { _symmetricAlgorithmName },
             };
 
             return JsonSerializer.SerializeToUtf8Bytes(key, s_jsonOptions);
@@ -138,6 +143,7 @@ namespace Zad2
         public void ImportKey(byte[] keyJson)
         {
             var key = JsonSerializer.Deserialize<CryptoData>(keyJson, s_jsonOptions)!;
+            SetSym(key.Methods![0]);
 
             _symmetricAlgorithm.IV = key.IV!;
             _symmetricAlgorithm.KeySize = key.KeySizes![0];

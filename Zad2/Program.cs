@@ -282,7 +282,7 @@ namespace Zad2
         {
             Console.WriteLine($"envelopeFile: {envelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
 
-            using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
+            using var crypto = new Crypto();
             crypto.ImportPrivateKey(privateKeyFile);
 
             var success = crypto.CheckEnvelope(envelopeFile, out byte[]? plainTextBytes);
@@ -304,7 +304,7 @@ namespace Zad2
         {
             Console.WriteLine($"inputFile: {inputFile}\nsignEnvelopeFile: {signEnvelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
 
-            using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
+            using var crypto = new Crypto();
             crypto.ImportPrivateKey(privateKeyFile);
 
             var success = crypto.CheckSignEnvelope(signEnvelopeFile, out byte[]? plainTextBytes);
