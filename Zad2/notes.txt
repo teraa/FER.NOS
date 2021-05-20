@@ -1,0 +1,12 @@
+Simetricni: AES, 3DES
+    AES:
+        --key-size: 128, 192, 256
+    3DES:
+        --key-size: 128, 192
+    
+    --mode CBC, CFB, CTS, ECB, OFB
+
+Asimetricni: RSA
+    --key-size 1024,2048
+
+Hash: SHA256, SHA512

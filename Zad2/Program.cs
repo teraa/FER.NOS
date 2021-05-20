@@ -3,7 +3,6 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Zad2
 {
@@ -170,6 +169,11 @@ namespace Zad2
                     getDefaultValue: () => "data/rsa.json",
                     description: "RSA private key."
                 ),
+                new Option<string>(
+                    aliases: new[] { "--sym", "--symmetric-algorithm" },
+                    getDefaultValue: () => "AES",
+                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
+                ),
             };
 
             var checkSignEnvelopeCommand = new Command(name: "checksignenvelope")
@@ -189,6 +193,11 @@ namespace Zad2
                     getDefaultValue: () => "data/rsa.json",
                     description: "RSA private key."
                 ),
+                new Option<string>(
+                    aliases: new[] { "--sym", "--symmetric-algorithm" },
+                    getDefaultValue: () => "AES",
+                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
+                ),
             };
 
             rootCommand.AddCommand(signCommand);
@@ -206,8 +215,8 @@ namespace Zad2
             genRsaCommand.Handler = CommandHandler.Create<int, string, string>(GenRsaCommandHandler);
             genCommand.Handler = CommandHandler.Create<string, int, CipherMode, string>(GenKeyCommandHandler);
             checkSignCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignCommandHandler);
-            checkEnvelopeCommand.Handler = CommandHandler.Create<string, string>(CheckEnvelopeCommandHandler);
-            checkSignEnvelopeCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignEnvelopeCommandHandler);
+            checkEnvelopeCommand.Handler = CommandHandler.Create<string, string, string>(CheckEnvelopeCommandHandler);
+            checkSignEnvelopeCommand.Handler = CommandHandler.Create<string, string, string, string>(CheckSignEnvelopeCommandHandler);
 
             rootCommand.Invoke(args);
         }
@@ -268,11 +277,12 @@ namespace Zad2
 
         static void CheckEnvelopeCommandHandler(
             string envelopeFile,
-            string privateKeyFile)
+            string privateKeyFile,
+            string symmetricAlgorithm)
         {
             Console.WriteLine($"envelopeFile: {envelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
 
-            using var crypto = new Crypto();
+            using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
             crypto.ImportPrivateKey(privateKeyFile);
 
             var success = crypto.CheckEnvelope(envelopeFile, out byte[]? plainTextBytes);
@@ -289,11 +299,12 @@ namespace Zad2
         static void CheckSignEnvelopeCommandHandler(
             string inputFile,
             string signEnvelopeFile,
-            string privateKeyFile)
+            string privateKeyFile,
+            string symmetricAlgorithm)
         {
             Console.WriteLine($"inputFile: {inputFile}\nsignEnvelopeFile: {signEnvelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
 
-            using var crypto = new Crypto();
+            using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
             crypto.ImportPrivateKey(privateKeyFile);
 
             var success = crypto.CheckSignEnvelope(signEnvelopeFile, out byte[]? plainTextBytes);
