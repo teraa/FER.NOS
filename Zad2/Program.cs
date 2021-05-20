@@ -169,11 +169,6 @@ namespace Zad2
                     getDefaultValue: () => "data/rsa.json",
                     description: "RSA private key."
                 ),
-                new Option<string>(
-                    aliases: new[] { "--sym", "--symmetric-algorithm" },
-                    getDefaultValue: () => "AES",
-                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
-                ),
             };
 
             var checkSignEnvelopeCommand = new Command(name: "checksignenvelope")
@@ -193,11 +188,6 @@ namespace Zad2
                     getDefaultValue: () => "data/rsa.json",
                     description: "RSA private key."
                 ),
-                new Option<string>(
-                    aliases: new[] { "--sym", "--symmetric-algorithm" },
-                    getDefaultValue: () => "AES",
-                    description: "Symmetric algorithm to use, allowed values: AES, 3DES"
-                ),
             };
 
             rootCommand.AddCommand(signCommand);
@@ -216,7 +206,7 @@ namespace Zad2
             genCommand.Handler = CommandHandler.Create<string, int, CipherMode, string>(GenKeyCommandHandler);
             checkSignCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignCommandHandler);
             checkEnvelopeCommand.Handler = CommandHandler.Create<string, string, string>(CheckEnvelopeCommandHandler);
-            checkSignEnvelopeCommand.Handler = CommandHandler.Create<string, string, string, string>(CheckSignEnvelopeCommandHandler);
+            checkSignEnvelopeCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignEnvelopeCommandHandler);
 
             rootCommand.Invoke(args);
         }
@@ -299,8 +289,7 @@ namespace Zad2
         static void CheckSignEnvelopeCommandHandler(
             string inputFile,
             string signEnvelopeFile,
-            string privateKeyFile,
-            string symmetricAlgorithm)
+            string privateKeyFile)
         {
             Console.WriteLine($"inputFile: {inputFile}\nsignEnvelopeFile: {signEnvelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
 
