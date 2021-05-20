@@ -154,86 +154,62 @@ namespace Zad2
                 new Option<string>(
                     aliases: new[] { "-p", "--pub", "--public-key-file" },
                     getDefaultValue: () => "data/rsa_pub.json",
-                    description: "Output file for the RSA public key."
+                    description: "RSA public key."
+                ),
+            };
+
+            var checkEnvelopeCommand = new Command(name: "checkenvelope")
+            {
+                new Option<string>(
+                    aliases: new[] { "--envelope", "--envelope-file" },
+                    getDefaultValue: () => "data/envelope.json",
+                    description: "Envelope file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-s", "--priv", "--private-key-file" },
+                    getDefaultValue: () => "data/rsa.json",
+                    description: "RSA private key."
+                ),
+            };
+
+            var checkSignEnvelopeCommand = new Command(name: "checksignenvelope")
+            {
+                new Option<string>(
+                    aliases: new[] { "-i", "--input-file" },
+                    getDefaultValue: () => "data/in.txt",
+                    description: "Input data file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "--sign-envelope-file" },
+                    getDefaultValue: () => "data/sign_envelope.json",
+                    description: "Sign envelope file"
+                ),
+                new Option<string>(
+                    aliases: new[] { "-s", "--priv", "--private-key-file" },
+                    getDefaultValue: () => "data/rsa.json",
+                    description: "RSA private key."
                 ),
             };
 
             rootCommand.AddCommand(signCommand);
             rootCommand.AddCommand(envelopeCommand);
             rootCommand.AddCommand(signEnvelopeCommand);
-
             rootCommand.AddCommand(genRsaCommand);
             rootCommand.AddCommand(genCommand);
-
             rootCommand.AddCommand(checkSignCommand);
+            rootCommand.AddCommand(checkEnvelopeCommand);
+            rootCommand.AddCommand(checkSignEnvelopeCommand);
 
             signCommand.Handler = CommandHandler.Create<string, string, string, string>(SignCommandHandler);
             envelopeCommand.Handler = CommandHandler.Create<string, string, string, string, string>(EnvelopeCommandHandler);
             signEnvelopeCommand.Handler = CommandHandler.Create<string, string, string, string, string, string>(SignEnvelopeCommandHandler);
-
             genRsaCommand.Handler = CommandHandler.Create<int, string, string>(GenRsaCommandHandler);
             genCommand.Handler = CommandHandler.Create<string, int, CipherMode, string>(GenKeyCommandHandler);
-
             checkSignCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignCommandHandler);
+            checkEnvelopeCommand.Handler = CommandHandler.Create<string, string>(CheckEnvelopeCommandHandler);
+            checkSignEnvelopeCommand.Handler = CommandHandler.Create<string, string, string>(CheckSignEnvelopeCommandHandler);
 
             rootCommand.Invoke(args);
-
-            // return;
-
-            // using var crypto = new Crypto();
-
-            // crypto.ImportPrivateKey("data/rsa.json");
-            // crypto.ImportKey("data/key.json");
-
-            // byte[] plainText = Encoding.UTF8.GetBytes("Tera");
-
-            // Console.WriteLine();
-            // var encrypted = crypto.SymEncrypt(plainText);
-            // Console.WriteLine("Encrypted: " + Convert.ToBase64String(encrypted));
-
-
-            // Console.WriteLine();
-            // var decrypted = crypto.SymDecrypt(encrypted);
-            // Console.WriteLine("Decrypted: " + Encoding.UTF8.GetString(decrypted));
-
-
-            // Console.WriteLine();
-            // var signature = crypto.Sign(plainText);
-            // Console.WriteLine("Signature: " + Convert.ToBase64String(signature));
-
-
-            // Console.WriteLine();
-            // var signatureSuccess = crypto.CheckSign(signature, plainText);
-            // Console.WriteLine($"SignatureSucess: {signatureSuccess}");
-
-
-            // Console.WriteLine();
-            // var envelope = crypto.Envelope(plainText);
-            // Console.WriteLine("Envelope");
-            // Console.WriteLine("c1: " + Convert.ToBase64String(envelope.c1));
-            // Console.WriteLine("c2: " + Convert.ToBase64String(envelope.c2));
-
-
-            // Console.WriteLine();
-            // var envelopeSuccess = crypto.CheckEnvelope(envelope.c1, envelope.c2, out byte[]? envelopePlainText);
-            // Console.WriteLine($"EnvelopeCheck: {envelopeSuccess}");
-            // Console.WriteLine(Encoding.UTF8.GetString(envelopePlainText!));
-
-            // Console.WriteLine();
-            // var signEnvelope = crypto.SignEnvelope(plainText);
-            // Console.WriteLine("SignEnvelope");
-            // Console.WriteLine("c1: " + Convert.ToBase64String(signEnvelope.c1));
-            // Console.WriteLine("c2: " + Convert.ToBase64String(signEnvelope.c2));
-            // Console.WriteLine("Signature: " + Convert.ToBase64String(signEnvelope.signature));
-
-            // Console.WriteLine();
-            // var signEnvelopeSuccess = crypto.CheckSignEnvelope(signEnvelope.c1, signEnvelope.c2, signEnvelope.signature, out byte[]? signEnvelopePlainText);
-            // Console.WriteLine($"SignEnvelopeCheck: {signEnvelopeSuccess}");
-            // Console.WriteLine(Encoding.UTF8.GetString(signEnvelopePlainText!));
-
-            // crypto.ImportKey("data/key.json");
-            // crypto.ImportPrivateKey("data/rsa.json");
-            // crypto.ImportPublicKey("data/rsa_pub.json");
         }
 
         static void SignCommandHandler(
@@ -242,6 +218,7 @@ namespace Zad2
             string hashAlgorithm,
             string outputFile)
         {
+            Console.WriteLine($"inputFile: {inputFile}\nprivateKeyFile: {privateKeyFile}\nhashAlgorithm: {hashAlgorithm}\noutputFile: {outputFile}\n");
 
             using var crypto = new Crypto(hashAlgorithmName: hashAlgorithm);
             crypto.ImportPrivateKey(privateKeyFile);
@@ -257,6 +234,8 @@ namespace Zad2
             string signatureFile,
             string publicKeyFile)
         {
+            Console.WriteLine($"inputFile: {inputFile}\nsignatureFile: {signatureFile}\npublicKeyFile: {publicKeyFile}\n---");
+
             using var crypto = new Crypto();
             crypto.ImportPublicKey(publicKeyFile);
 
@@ -273,6 +252,8 @@ namespace Zad2
             string publicKeyFile,
             string outputFile)
         {
+            Console.WriteLine($"inputFile: {inputFile}\nsymmetricAlgorithm: {symmetricAlgorithm}\nkeyFile: {keyFile}\npublicKeyFile: {publicKeyFile}\noutputFile: {outputFile}\n---");
+
             using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
             crypto.ImportKey(keyFile);
             crypto.ImportPublicKey(publicKeyFile);
@@ -285,6 +266,47 @@ namespace Zad2
             Console.WriteLine($"c2: {Convert.ToBase64String(c2)}");
         }
 
+        static void CheckEnvelopeCommandHandler(
+            string envelopeFile,
+            string privateKeyFile)
+        {
+            Console.WriteLine($"envelopeFile: {envelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
+
+            using var crypto = new Crypto();
+            crypto.ImportPrivateKey(privateKeyFile);
+
+            var success = crypto.CheckEnvelope(envelopeFile, out byte[]? plainTextBytes);
+
+            Console.WriteLine(success);
+
+            if (success)
+            {
+                string plainText = Crypto.Encoding.GetString(plainTextBytes!);
+                Console.WriteLine($"Data: {plainText}");
+            }
+        }
+
+        static void CheckSignEnvelopeCommandHandler(
+            string inputFile,
+            string signEnvelopeFile,
+            string privateKeyFile)
+        {
+            Console.WriteLine($"inputFile: {inputFile}\nsignEnvelopeFile: {signEnvelopeFile}\nprivateKeyFile: {privateKeyFile}\n---");
+
+            using var crypto = new Crypto();
+            crypto.ImportPrivateKey(privateKeyFile);
+
+            var success = crypto.CheckSignEnvelope(signEnvelopeFile, out byte[]? plainTextBytes);
+
+            Console.WriteLine(success);
+
+            if (success)
+            {
+                string plainText = Crypto.Encoding.GetString(plainTextBytes!);
+                Console.WriteLine($"Data: {plainText}");
+            }
+        }
+
         static void SignEnvelopeCommandHandler(
             string inputFile,
             string privateKeyFile,
@@ -293,6 +315,8 @@ namespace Zad2
             string keyFile,
             string outputFile)
         {
+            Console.WriteLine($"inputFile: {inputFile}\nprivateKeyFile: {privateKeyFile}\nhashAlgorithm: {hashAlgorithm}\nsymmetricAlgorithm: {symmetricAlgorithm}\nkeyFile: {keyFile}\noutputFile: {outputFile}\n---");
+
             using var crypto = new Crypto(hashAlgorithm, symmetricAlgorithm);
             crypto.ImportPrivateKey(privateKeyFile);
             crypto.ImportKey(keyFile);
@@ -311,6 +335,8 @@ namespace Zad2
             string publicKeyFile,
             string privateKeyFile)
         {
+            Console.WriteLine($"keySize: {keySize}\npublicKeyFile: {publicKeyFile}\nprivateKeyFile: {privateKeyFile}\n---");
+
             using var crypto = new Crypto();
 
             crypto.GenerateKeyPair(keySize, publicKeyFile, privateKeyFile);
@@ -322,6 +348,8 @@ namespace Zad2
             CipherMode cipherMode,
             string keyFile)
         {
+            Console.WriteLine($"symmetricAlgorithm: {symmetricAlgorithm}\nkeySize: {keySize}\ncipherMode: {cipherMode}\nkeyFile: {keyFile}\n---");
+
             using var crypto = new Crypto(symmetricAlgorithmName: symmetricAlgorithm);
 
             crypto.GenerateKey(keySize, cipherMode, keyFile);
